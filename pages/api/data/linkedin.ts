@@ -15,43 +15,52 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const headers = {
       Authorization: `Bearer ${accessToken}`,
-      'LinkedIn-Version': '202304',
+      'LinkedIn-Version': '202411',
       'X-Restli-Protocol-Version': '2.0.0',
     };
 
-    const sharesRes = await fetch(
-      `https://api.linkedin.com/v2/shares?q=owners&owners=urn:li:organization:${organizationId}&count=50`,
+    // Fetch org posts via the REST posts API
+    const postsRes = await fetch(
+      `https://api.linkedin.com/rest/posts?author=urn%3Ali%3Aorganization%3A${organizationId}&q=author&count=20&sortBy=LAST_MODIFIED`,
       { headers }
     );
-    if (!sharesRes.ok) return res.status(sharesRes.status).json({ error: await sharesRes.json() });
-    const sharesData = await sharesRes.json();
-    const shares = sharesData.elements ?? [];
+    if (!postsRes.ok) return res.status(postsRes.status).json({ error: await postsRes.json() });
+    const postsData = await postsRes.json();
+    const elements: Record<string, unknown>[] = postsData.elements ?? [];
 
-    const statsRes = await fetch(
-      `https://api.linkedin.com/v2/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}`,
-      { headers }
-    );
-    const statsData = statsRes.ok ? await statsRes.json() : { elements: [] };
+    // Fetch per-post stats
+    const urns = elements.map(p => p.id as string).filter(Boolean);
     const statsMap: Record<string, Record<string, number>> = {};
-    for (const stat of statsData.elements ?? []) {
-      statsMap[stat.share] = stat.totalShareStatistics ?? {};
+
+    if (urns.length > 0) {
+      const statsRes = await fetch(
+        `https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A${organizationId}&count=20`,
+        { headers }
+      );
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        for (const stat of statsData.elements ?? []) {
+          const urn = stat.organizationalEntity ?? stat.share ?? '';
+          statsMap[urn] = stat.totalShareStatistics ?? {};
+        }
+      }
     }
 
-    const posts: LinkedInPost[] = shares.map((share: Record<string, unknown>) => {
-      const shareUrn = share.activity as string ?? '';
-      const stats = statsMap[shareUrn] ?? {};
-      const impressions = stats.impressionCount ?? 0;
-      const clicks      = stats.clickCount ?? 0;
-      const likes       = stats.likeCount ?? 0;
-      const comments    = stats.commentCount ?? 0;
-      const shareCount  = stats.shareCount ?? 0;
+    const posts: LinkedInPost[] = elements.map(el => {
+      const shareId = el.id as string ?? '';
+      const stats   = statsMap[shareId] ?? {};
+      const impressions    = (stats.impressionCount as number) ?? 0;
+      const clicks         = (stats.clickCount as number) ?? 0;
+      const likes          = (stats.likeCount as number) ?? 0;
+      const comments       = (stats.commentCount as number) ?? 0;
+      const shareCount     = (stats.shareCount as number) ?? 0;
       const engagementRate = impressions > 0
         ? ((clicks + likes + comments + shareCount) / impressions) * 100 : 0;
 
-      const text = (share.text as Record<string, string>)?.text ?? '';
+      const commentary = el.commentary as string ?? '';
       const post: LinkedInPost = {
-        shareId: shareUrn,
-        text,
+        shareId,
+        text: commentary,
         impressions, clicks, likes, comments,
         shares: shareCount,
         engagementRate: parseFloat(engagementRate.toFixed(2)),
