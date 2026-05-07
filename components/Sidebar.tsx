@@ -8,8 +8,6 @@ const NAV = [
   { section: null,          label: 'POV (Savage-Only)', href: '/content/pov' },
   { section: 'PAID',        label: 'YT Ads',            href: '/paid' },
   { section: 'BY PLATFORM', label: 'YouTube',           href: '/platform/youtube' },
-  { section: null,          label: 'TikTok',            href: '/platform/tiktok' },
-  { section: null,          label: 'Instagram',         href: '/platform/instagram' },
   { section: null,          label: 'LinkedIn',          href: '/platform/linkedin' },
   { section: 'INTELLIGENCE',label: 'Benchmarks',        href: '/benchmarks' },
   { section: null,          label: 'Learning Loops',    href: '/learning-loops' },
