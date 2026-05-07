@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: 'Sheet1!A2:U50',
+      range: 'YouTube Ad Report!A2:U50',
     });
 
     const rows: string[][] = (response.data.values as string[][]) ?? [];
