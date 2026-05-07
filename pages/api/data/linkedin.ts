@@ -13,57 +13,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const headers = {
+    const restHeaders = {
       Authorization: `Bearer ${accessToken}`,
       'LinkedIn-Version': '202604',
       'X-Restli-Protocol-Version': '2.0.0',
     };
+    const v2Headers = {
+      Authorization: `Bearer ${accessToken}`,
+      'X-Restli-Protocol-Version': '2.0.0',
+    };
 
-    // Fetch org posts via the REST posts API
+    // Fetch recent org posts
     const postsRes = await fetch(
       `https://api.linkedin.com/rest/posts?author=urn%3Ali%3Aorganization%3A${organizationId}&q=author&count=20&sortBy=LAST_MODIFIED`,
-      { headers }
+      { headers: restHeaders }
     );
     if (!postsRes.ok) return res.status(postsRes.status).json({ error: await postsRes.json() });
     const postsData = await postsRes.json();
     const elements: Record<string, unknown>[] = postsData.elements ?? [];
 
-    // Fetch per-post stats
-    const urns = elements.map(p => p.id as string).filter(Boolean);
-    const statsMap: Record<string, Record<string, number>> = {};
-
-    if (urns.length > 0) {
-      const statsRes = await fetch(
-        `https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A${organizationId}&count=20`,
-        { headers }
-      );
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        for (const stat of statsData.elements ?? []) {
-          const urn = stat.organizationalEntity ?? stat.share ?? '';
-          statsMap[urn] = stat.totalShareStatistics ?? {};
+    // Fetch social actions (likes + comments) for each post in parallel
+    const socialActions = await Promise.all(
+      elements.map(async (el) => {
+        const urn = el.id as string;
+        if (!urn) return { urn, likes: 0, comments: 0 };
+        try {
+          const r = await fetch(
+            `https://api.linkedin.com/v2/socialActions/${encodeURIComponent(urn)}`,
+            { headers: v2Headers }
+          );
+          if (!r.ok) return { urn, likes: 0, comments: 0 };
+          const d = await r.json();
+          return {
+            urn,
+            likes:    d.likesSummary?.totalLikes ?? 0,
+            comments: d.commentsSummary?.totalFirstLevelComments ?? 0,
+          };
+        } catch {
+          return { urn, likes: 0, comments: 0 };
         }
-      }
-    }
+      })
+    );
+
+    const actionsMap = Object.fromEntries(socialActions.map(a => [a.urn, a]));
 
     const posts: LinkedInPost[] = elements.map(el => {
-      const shareId = el.id as string ?? '';
-      const stats   = statsMap[shareId] ?? {};
-      const impressions    = (stats.impressionCount as number) ?? 0;
-      const clicks         = (stats.clickCount as number) ?? 0;
-      const likes          = (stats.likeCount as number) ?? 0;
-      const comments       = (stats.commentCount as number) ?? 0;
-      const shareCount     = (stats.shareCount as number) ?? 0;
-      const engagementRate = impressions > 0
-        ? ((clicks + likes + comments + shareCount) / impressions) * 100 : 0;
-
-      const commentary = el.commentary as string ?? '';
+      const shareId  = el.id as string ?? '';
+      const actions  = actionsMap[shareId] ?? { likes: 0, comments: 0 };
+      const likes    = actions.likes;
+      const comments = actions.comments;
+      // Impressions not available without partner API — use 0
       const post: LinkedInPost = {
         shareId,
-        text: commentary,
-        impressions, clicks, likes, comments,
-        shares: shareCount,
-        engagementRate: parseFloat(engagementRate.toFixed(2)),
+        text: el.commentary as string ?? '',
+        impressions: 0,
+        clicks: 0,
+        likes,
+        comments,
+        shares: 0,
+        engagementRate: 0,
       };
       return { ...post, evaluation: evaluateLinkedIn(post) };
     });

@@ -38,7 +38,7 @@ export default function LinkedInPlatformPage() {
         <table className="w-full text-xs border-collapse">
           <thead>
             <tr className="text-gray-500 uppercase border-b border-gray-800">
-              {['Post','Impressions','Clicks','Likes','Eng. Rate'].map(h => (
+              {['Post','Likes','Comments'].map(h => (
                 <th key={h} className="text-left py-2 pr-3">{h}</th>
               ))}
             </tr>
@@ -46,11 +46,9 @@ export default function LinkedInPlatformPage() {
           <tbody>
             {posts.map(p => (
               <tr key={p.shareId} className="border-b border-gray-900 hover:bg-gray-900/50">
-                <td className="py-2 pr-3 text-white max-w-xs truncate">{p.text?.slice(0, 60) ?? '—'}</td>
-                <td className="pr-3 text-gray-300">{p.impressions.toLocaleString()}</td>
-                <td className="pr-3 text-gray-300">{p.clicks}</td>
+                <td className="py-2 pr-3 text-white max-w-sm truncate">{p.text?.slice(0, 80) ?? '—'}</td>
                 <td className="pr-3 text-gray-300">{p.likes}</td>
-                <td className="pr-3 text-gray-300">{p.engagementRate.toFixed(1)}%</td>
+                <td className="pr-3 text-gray-300">{p.comments}</td>
               </tr>
             ))}
           </tbody>
