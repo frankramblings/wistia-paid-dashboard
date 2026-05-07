@@ -49,13 +49,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!apiKey) return res.status(500).json({ error: 'Missing Anthropic API key' });
 
   try {
-    const body = req.body as SummaryRequest;
+    const body = req.body as SummaryRequest & { _customPrompt?: string };
+    const prompt = body._customPrompt ?? buildPrompt(body);
     const client = new Anthropic({ apiKey });
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 300,
-      messages: [{ role: 'user', content: buildPrompt(body) }],
+      messages: [{ role: 'user', content: prompt }],
     });
 
     const raw = (message.content[0] as { text: string }).text;
