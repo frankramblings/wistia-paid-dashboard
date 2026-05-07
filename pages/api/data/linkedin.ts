@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const headers = {
       Authorization: `Bearer ${accessToken}`,
-      'LinkedIn-Version': '202304',
+      'LinkedIn-Version': '202604',
       'X-Restli-Protocol-Version': '2.0.0',
     };
 
