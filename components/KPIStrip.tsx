@@ -2,7 +2,7 @@ interface KPI { label: string; value: string; status?: 'good' | 'warning' | 'neu
 
 export default function KPIStrip({ kpis }: { kpis: KPI[] }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
       {kpis.map(k => (
         <div key={k.label} className="bg-gray-900 rounded-lg p-3 border border-gray-800">
           <div className={`text-xl font-bold ${

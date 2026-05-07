@@ -12,8 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const now = new Date();
-  const startYear = now.getFullYear();
-  const startMonth = 1;
+  const days = parseInt(req.query.days as string ?? '0', 10);
+  const start = days > 0 ? new Date(now.getTime() - days * 86400000) : new Date(now.getFullYear(), 0, 1);
+  const startYear = start.getFullYear();
+  const startMonth = start.getMonth() + 1;
+  const startDay = start.getDate();
 
   const analyticsHeaders = {
     Authorization: `Bearer ${accessToken}`,
@@ -29,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'https://api.linkedin.com/v2/adAnalyticsV2',
       '?q=analytics&pivot=CAMPAIGN&timeGranularity=ALL',
       `&accounts[0]=urn:li:sponsoredAccount:${ACCOUNT_ID}`,
-      `&dateRange.start.year=${startYear}&dateRange.start.month=${startMonth}&dateRange.start.day=1`,
+      `&dateRange.start.year=${startYear}&dateRange.start.month=${startMonth}&dateRange.start.day=${startDay}`,
       `&dateRange.end.year=${now.getFullYear()}&dateRange.end.month=${now.getMonth() + 1}&dateRange.end.day=${now.getDate()}`,
       '&fields=impressions,clicks,costInLocalCurrency,externalWebsiteConversions',
       '&count=20',
