@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Anthropic from '@anthropic-ai/sdk';
 import type { YouTubeAdRow, YouTubeOrganicVideo, TikTokVideo, DashboardSummary } from '@/lib/types';
 
 interface SummaryRequest {
@@ -45,21 +44,26 @@ Return JSON: { "narrative": "...", "actionItem": "..." }`;
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Missing Anthropic API key' });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'Missing Groq API key' });
 
   try {
     const body = req.body as SummaryRequest & { _customPrompt?: string };
     const prompt = body._customPrompt ?? buildPrompt(body);
-    const client = new Anthropic({ apiKey });
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 300,
-      messages: [{ role: 'user', content: prompt }],
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }],
+      }),
     });
+    if (!groqRes.ok) throw new Error(`Groq error ${groqRes.status}`);
+    const groqData = await groqRes.json();
 
-    const raw = (message.content[0] as { text: string }).text;
+    const raw: string = groqData.choices?.[0]?.message?.content ?? '';
     const parsed = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] ?? '{}');
 
     const summary: DashboardSummary = {
