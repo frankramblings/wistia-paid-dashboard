@@ -7,6 +7,7 @@ const NAV = [
   { section: 'CONTENT',    label: 'TTL (w/ Guest)',    href: '/content/ttl' },
   { section: null,          label: 'POV (Savage-Only)', href: '/content/pov' },
   { section: 'PAID',        label: 'YT Ads',            href: '/paid' },
+  { section: null,          label: 'LinkedIn Ads',      href: '/paid/linkedin' },
   { section: 'BY PLATFORM', label: 'YouTube',           href: '/platform/youtube' },
   { section: null,          label: 'LinkedIn',          href: '/platform/linkedin' },
   { section: 'INTELLIGENCE',label: 'Benchmarks',        href: '/benchmarks' },

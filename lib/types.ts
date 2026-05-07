@@ -87,6 +87,18 @@ export interface LinkedInPost {
   evaluation?: AssetEvaluation;
 }
 
+export interface LinkedInCampaign {
+  campaignId: string;
+  name: string;
+  status: string;
+  impressions: number;
+  clicks: number;
+  spend: number;
+  conversions: number;
+  ctr: number;
+  cpc: number;
+}
+
 export interface DashboardSummary {
   narrative: string;
   actionItem: string;
