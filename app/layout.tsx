@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Bebas_Neue, Space_Grotesk } from 'next/font/google';
+import { Bebas_Neue, IBM_Plex_Sans } from 'next/font/google';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
@@ -11,26 +11,25 @@ const bebasNeue = Bebas_Neue({
   display: 'swap',
 });
 
-const spaceGrotesk = Space_Grotesk({
+const ibmPlexSans = IBM_Plex_Sans({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-space-grotesk',
+  variable: '--font-plex',
   display: 'swap',
 });
 
-export const metadata: Metadata = { title: 'Wistia Performance Dashboard' };
+export const metadata: Metadata = { title: 'Wistia Paid Dashboard' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bebasNeue.variable} ${spaceGrotesk.variable}`}>
-      <body className="bg-bone-bg text-bone-hi min-h-screen flex font-sans">
-        {/* Sidebar: hidden on mobile, visible sm+ */}
+    <html lang="en" className={`${bebasNeue.variable} ${ibmPlexSans.variable}`}>
+      <body className="bg-w-canvas text-w-hi min-h-screen flex font-sans">
         <div className="hidden sm:block">
           <Sidebar />
         </div>
         <main className="flex-1 overflow-y-auto p-5 sm:p-8 pb-20 sm:pb-8">
           {children}
         </main>
-        {/* Bottom nav: visible on mobile only */}
         <MobileNav />
       </body>
     </html>
