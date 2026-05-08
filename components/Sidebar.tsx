@@ -3,9 +3,49 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
+const SIDEBAR_BG  = '#233293';
+const TEXT_ACTIVE = '#233293';
+const TEXT_IDLE   = '#edeff6';
+
+// Outline/stroke icons ────────────────────────────────────────────────────────
+
+function OverviewIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] shrink-0">
+      <line x1="18" x2="18" y1="20" y2="10"/>
+      <line x1="12" x2="12" y1="20" y2="4"/>
+      <line x1="6"  x2="6"  y1="20" y2="14"/>
+    </svg>
+  );
+}
+
+function BenchmarksIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] shrink-0">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="8" y1="13" x2="16" y2="13"/>
+      <line x1="8" y1="17" x2="16" y2="17"/>
+      <line x1="8" y1="9"  x2="10" y2="9"/>
+    </svg>
+  );
+}
+
+function LoopsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] shrink-0">
+      <polyline points="1 4 1 10 7 10"/>
+      <polyline points="23 20 23 14 17 14"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+    </svg>
+  );
+}
+
+// Brand platform icons ────────────────────────────────────────────────────────
+
 function YouTubeIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-[18px] h-[18px] shrink-0">
       <path d="M23.5 6.2a3.03 3.03 0 0 0-2.13-2.14C19.51 3.6 12 3.6 12 3.6s-7.51 0-9.37.48A3.03 3.03 0 0 0 .5 6.2C0 8.07 0 12 0 12s0 3.93.5 5.8a3.03 3.03 0 0 0 2.13 2.14C4.49 20.4 12 20.4 12 20.4s7.51 0 9.37-.46A3.03 3.03 0 0 0 23.5 17.8C24 15.93 24 12 24 12s0-3.93-.5-5.8zM9.6 15.6V8.4L15.87 12 9.6 15.6z"/>
     </svg>
   );
@@ -13,7 +53,7 @@ function YouTubeIcon() {
 
 function LinkedInIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-[18px] h-[18px] shrink-0">
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
     </svg>
   );
@@ -21,93 +61,71 @@ function LinkedInIcon() {
 
 function MetaIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-      <path d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.195 0 11.755 0 14.009c0 1.129.353 2.543 1.196 3.431.845.89 1.965 1.26 3.04 1.26 1.527 0 2.745-.924 3.815-2.014 1.07-1.088 2.11-2.64 3.265-4.602l1.33 2.214c1.02 1.7 1.857 2.905 2.77 3.786.912.88 1.93 1.42 3.17 1.416 1.28 0 2.472-.45 3.343-1.476C22.538 16.84 23 15.4 23 13.97c0-1.898-.666-4.032-1.868-5.803C19.932 6.42 18.345 5.2 16.5 5.2c-1.12 0-2.127.547-3.012 1.416-.885.869-1.748 2.14-2.726 3.847l-.457.773c-.932 1.577-1.723 2.79-2.558 3.65-.835.86-1.59 1.314-2.247 1.314-.648 0-1.18-.35-1.54-.806-.36-.454-.56-1.104-.56-1.884 0-1.808.572-4.059 1.547-5.55.975-1.49 1.726-2.019 2.392-2.019.422 0 .835.136 1.232.42.396.285.78.7 1.16 1.273l1.05-1.772A6.05 6.05 0 0 0 8.87 5.12 4.95 4.95 0 0 0 6.91 4.03h.005zm9.58 1.17c1.12 0 2.24.756 3.075 2.062.835 1.306 1.432 3.146 1.432 4.706 0 1.038-.254 1.94-.68 2.555-.427.614-.982.93-1.632.93-.73 0-1.402-.413-2.159-1.232-.756-.82-1.59-2.105-2.572-3.87l-.546-.924c.909-1.55 1.718-2.698 2.527-3.488.808-.79 1.527-1.14 2.555-1.14z"/>
+    <svg viewBox="0 0 290 191" fill="currentColor" className="w-[18px] h-[18px] shrink-0">
+      <path d="m31.06,125.96c0,10.98 2.41,19.41 5.56,24.51 4.13,6.68 10.29,9.51 16.57,9.51 8.1,0 15.51-2.01 29.79-21.76 11.44-15.83 24.92-38.05 33.99-51.98l15.36-23.6c10.67-16.39 23.02-34.61 37.18-46.96 11.56-10.08 24.03-15.68 36.58-15.68 21.07,0 41.14,12.21 56.5,35.11 16.81,25.08 24.97,56.67 24.97,89.27 0,19.38-3.82,33.62-10.32,44.87-6.28,10.88-18.52,21.75-39.11,21.75l0-31.02c17.63,0 22.03-16.2 22.03-34.74 0-26.42-6.16-55.74-19.73-76.69-9.63-14.86-22.11-23.94-35.84-23.94-14.85,0-26.8,11.2-40.23,31.17-7.14,10.61-14.47,23.54-22.7,38.13l-9.06,16.05c-18.2,32.27-22.81,39.62-31.91,51.75-15.95,21.24-29.57,29.29-47.5,29.29-21.27,0-34.72-9.21-43.05-23.09-6.8-11.31-10.14-26.15-10.14-43.06z"/>
+      <path d="m24.49,37.3c14.24-21.95 34.79-37.3 58.36-37.3 13.65,0 27.22,4.04 41.39,15.61 15.5,12.65 32.02,33.48 52.63,67.81l7.39,12.32c17.84,29.72 27.99,45.01 33.93,52.22 7.64,9.26 12.99,12.02 19.94,12.02 17.63,0 22.03-16.2 22.03-34.74l27.4-.86c0,19.38-3.82,33.62-10.32,44.87-6.28,10.88-18.52,21.75-39.11,21.75-12.8,0-24.14-2.78-36.68-14.61-9.64-9.08-20.91-25.21-29.58-39.71l-25.79-43.08c-12.94-21.62-24.81-37.74-31.68-45.04-7.39-7.85-16.89-17.33-32.05-17.33-12.27,0-22.69,8.61-31.41,21.78z"/>
+      <path d="m82.35,31.23c-12.27,0-22.69,8.61-31.41,21.78-12.33,18.61-19.88,46.33-19.88,72.95 0,10.98 2.41,19.41 5.56,24.51l-26.48,17.44c-6.8-11.31-10.14-26.15-10.14-43.06 0-30.75 8.44-62.8 24.49-87.55 14.24-21.95 34.79-37.3 58.36-37.3z"/>
     </svg>
   );
 }
 
 function TikTokIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-[18px] h-[18px] shrink-0">
       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.84a8.23 8.23 0 0 0 4.84 1.54V6.9a4.85 4.85 0 0 1-1.07-.21z"/>
     </svg>
   );
 }
 
-function BenchmarksIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-      <path d="M3 3h18v2H3V3zm0 8h18v2H3v-2zm0 8h18v2H3v-2zm0-4h10v2H3v-2zm0-8h10v2H3V7z"/>
-    </svg>
-  );
-}
-
-function LoopsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-      <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
-    </svg>
-  );
-}
-
-function OverviewIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
-      <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-    </svg>
-  );
-}
-
 const NAV = [
-  { section: null,           label: 'Overview',      href: '/',               Icon: OverviewIcon },
-  { section: 'Paid',         label: 'YouTube',        href: '/paid',           Icon: YouTubeIcon },
-  { section: null,           label: 'LinkedIn',       href: '/paid/linkedin',  Icon: LinkedInIcon },
-  { section: null,           label: 'Meta (FB+IG)',   href: '/paid/meta',      Icon: MetaIcon },
-  { section: null,           label: 'TikTok',         href: '/paid/tiktok',    Icon: TikTokIcon },
-  { section: 'Intelligence', label: 'Benchmarks',     href: '/benchmarks',     Icon: BenchmarksIcon },
-  { section: null,           label: 'Learning Loops', href: '/learning-loops', Icon: LoopsIcon },
+  { label: 'Overview',      href: '/',               Icon: OverviewIcon },
+  { label: 'YouTube',        href: '/paid',           Icon: YouTubeIcon },
+  { label: 'LinkedIn',       href: '/paid/linkedin',  Icon: LinkedInIcon },
+  { label: 'Meta (FB+IG)',   href: '/paid/meta',      Icon: MetaIcon },
+  { label: 'TikTok',         href: '/paid/tiktok',    Icon: TikTokIcon },
+  { label: 'Benchmarks',     href: '/benchmarks',     Icon: BenchmarksIcon },
+  { label: 'Learning Loops', href: '/learning-loops', Icon: LoopsIcon },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="w-[200px] shrink-0 h-screen sticky top-0 flex flex-col overflow-y-auto bg-w-blue">
+    <aside
+      className="w-[220px] shrink-0 h-screen sticky top-0 flex flex-col overflow-y-auto"
+      style={{ background: SIDEBAR_BG }}
+    >
+      {/* Logo */}
       <div className="px-5 py-5 shrink-0">
         <Image
           src="/wistia-logo.png"
           alt="Wistia"
-          width={90}
-          height={24}
+          width={88}
+          height={22}
           className="object-contain object-left brightness-0 invert"
           priority
         />
       </div>
 
-      <nav className="flex-1 px-3 pb-4">
-        {NAV.map(({ section, label, href, Icon }) => {
+      {/* Nav */}
+      <nav className="flex-1 px-3 pt-4 pb-4 overflow-y-auto space-y-0.5">
+        {NAV.map(({ label, href, Icon }) => {
           const active = pathname === href;
           return (
-            <div key={href}>
-              {section && (
-                <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold tracking-widest uppercase text-white/50">
-                  {section}
-                </div>
-              )}
-              <Link
-                href={href}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-full transition-colors ${
-                  active
-                    ? 'bg-white text-w-blue font-semibold'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <span className="shrink-0 flex items-center justify-center w-[18px]">
-                  <Icon />
-                </span>
-                <span className="text-[11px] font-medium leading-tight">{label}</span>
-              </Link>
-            </div>
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-full text-[15px] font-medium leading-none transition-colors"
+              style={
+                active
+                  ? { background: '#ffffff', color: TEXT_ACTIVE }
+                  : { color: TEXT_IDLE }
+              }
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = ''; }}
+            >
+              <Icon />
+              <span>{label}</span>
+            </Link>
           );
         })}
       </nav>

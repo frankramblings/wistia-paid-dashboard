@@ -17,7 +17,7 @@ export default function ActionableCallout({ rules }: Props) {
       {active.map((r, i) => (
         <div
           key={i}
-          className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-sm ${
+          className={`flex items-start gap-3 px-4 py-3 rounded-md border text-sm ${
             r.type === 'warn'
               ? 'bg-w-warn-bg border-w-warn/30 text-w-warn'
               : r.type === 'good'

@@ -12,23 +12,23 @@ interface AssetRow {
 
 export default function AssetTable({ rows }: { rows: AssetRow[] }) {
   return (
-    <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+    <div className="bg-white rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="border-b border-w-border">
-              <th className="text-left py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap">Asset</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap text-left">Format</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap text-left">YouTube</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap text-left">TikTok</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap text-left">Instagram</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap text-left">LinkedIn</th>
+              <th className="text-left py-3.5 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap">Asset</th>
+              <th className="py-3.5 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap text-left">Format</th>
+              <th className="py-3.5 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap text-left">YouTube</th>
+              <th className="py-3.5 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap text-left">TikTok</th>
+              <th className="py-3.5 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap text-left">Instagram</th>
+              <th className="py-3.5 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap text-left">LinkedIn</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr key={i} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
-                <td className="py-3 px-5 text-w-hi font-medium">{row.title}</td>
+              <tr key={i} className="border-b border-w-border last:border-0 hover:bg-w-surface-alt">
+                <td className="py-3.5 px-4 text-w-hi font-medium">{row.title}</td>
                 <td className="px-5 text-w-mid capitalize">{row.format}</td>
                 <td className="px-5">
                   {row.yt ? (

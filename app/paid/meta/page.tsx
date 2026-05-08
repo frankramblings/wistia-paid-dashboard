@@ -67,29 +67,29 @@ export default function MetaAdsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-w-hi">Meta Ads (FB + IG)</h1>
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          <div className="flex gap-1">
-            {DATE_RANGES.map(({ label, days }) => (
-              <button key={label} onClick={() => handleRangeChange(days)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  selectedDays === days ? 'bg-w-blue text-white' : 'bg-w-surface border border-w-border text-w-mid hover:text-w-hi'
-                }`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          {lastRefresh && <span className="text-w-mid text-xs hidden sm:block">{lastRefresh}</span>}
-          <button onClick={() => refresh()} disabled={loading}
-            className="px-4 py-1.5 bg-w-blue hover:bg-[#1f38c5] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
-            {loading ? 'Loading…' : '↻'}
-          </button>
+      <div className="mb-2">
+        <h1 className="font-bold text-w-hi">Meta Ads (FB + IG)</h1>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap justify-end mb-6">
+        <div className="flex gap-1">
+          {DATE_RANGES.map(({ label, days }) => (
+            <button key={label} onClick={() => handleRangeChange(days)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                selectedDays === days ? 'bg-w-blue-bg border border-w-blue-border text-w-blue-text font-semibold' : 'bg-w-surface border border-w-border text-w-mid hover:text-w-hi'
+              }`}>
+              {label}
+            </button>
+          ))}
         </div>
+        {lastRefresh && <span className="text-w-mid text-xs hidden sm:block">{lastRefresh}</span>}
+        <button onClick={() => refresh()} disabled={loading}
+          className="px-4 py-1.5 bg-w-hi hover:bg-[#0f0f1a] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
+          {loading ? 'Loading…' : '↻'}
+        </button>
       </div>
 
       {notConfigured && (
-        <div className="mb-6 px-4 py-3 rounded-lg bg-w-blue-bg border border-w-blue/30 text-w-blue text-sm">
+        <div className="mb-6 px-4 py-3 rounded-xl bg-w-blue-bg border border-w-blue/30 text-w-blue text-sm">
           Meta Ads not configured. Add META_ACCESS_TOKEN and META_AD_ACCOUNT_ID to environment variables.
         </div>
       )}
@@ -106,45 +106,45 @@ export default function MetaAdsPage() {
             { label: 'Blended CTR',  value: `${blendedCTR.toFixed(2)}%` },
             { label: 'Conversions',  value: totalConversions.toLocaleString() },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-w-surface rounded-lg p-4 border border-w-border shadow-card">
-              <div className="text-w-mid text-xs font-medium mb-2">{label}</div>
-              <div className="text-w-hi text-xl font-medium">{value}</div>
+            <div key={label} className="bg-[#f0f0f3] rounded-2xl p-5">
+              <div className="font-walsheim text-[14px] font-semibold text-w-hi mb-2 truncate">{label}</div>
+              <div className="font-walsheim text-[26px] font-bold text-w-hi tabular-nums tracking-tight">{value}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-w-border">
+              <tr className="bg-white border-b border-[#ebebed]">
                 {['Campaign', 'Status', 'Objective', 'Impressions', 'CPM', 'Clicks', 'CTR', 'Spend', 'CPC', 'Conversions'].map(h => (
-                  <th key={h} className="text-left py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap">{h}</th>
+                  <th key={h} className="text-left py-3 px-4 font-walsheim text-sm font-semibold text-w-hi whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {campaigns.map(c => {
+              {campaigns.map((c, i) => {
                 const cpm = calcCPM(c.spend, c.impressions);
                 return (
-                  <tr key={c.campaignId} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
-                    <td className="py-3 px-5 text-w-hi">{c.name}</td>
-                    <td className="px-5 whitespace-nowrap">
+                  <tr key={c.campaignId} className={`${i % 2 === 0 ? 'bg-[#f9f9fb]' : 'bg-white'} border-b border-[#ebebed] last:border-0 hover:bg-[#eeeef0] transition-colors`}>
+                    <td className="py-4 px-4 text-w-hi">{c.name}</td>
+                    <td className="py-4 px-4 whitespace-nowrap">
                       <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                         c.status === 'ACTIVE' ? 'bg-w-good-bg text-w-good' :
                         c.status === 'PAUSED' ? 'bg-w-warn-bg text-w-warn' :
                         'bg-w-border text-w-mid'
                       }`}>{c.status}</span>
                     </td>
-                    <td className="px-5 text-w-mid whitespace-nowrap">{c.objective?.replace('OUTCOME_', '')}</td>
-                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">{c.impressions.toLocaleString()}</td>
-                    <td className={`px-5 whitespace-nowrap tabular-nums ${scoreAndColor('meta', 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
-                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">{c.clicks.toLocaleString()}</td>
-                    <td className={`px-5 whitespace-nowrap tabular-nums ${scoreAndColor('meta', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
-                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td className={`px-5 whitespace-nowrap tabular-nums ${c.cpc > 0 ? scoreAndColor('meta', 'cpc', c.cpc) : 'text-w-mid'}`}>{c.cpc > 0 ? `$${c.cpc.toFixed(2)}` : '—'}</td>
-                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">{c.conversions > 0 ? c.conversions.toLocaleString() : '—'}</td>
+                    <td className="py-4 px-4 text-w-hi whitespace-nowrap">{c.objective?.replace('OUTCOME_', '')}</td>
+                    <td className="py-4 px-4 text-w-hi whitespace-nowrap tabular-nums">{c.impressions.toLocaleString()}</td>
+                    <td className={`py-4 px-4 whitespace-nowrap tabular-nums ${scoreAndColor('meta', 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
+                    <td className="py-4 px-4 text-w-hi whitespace-nowrap tabular-nums">{c.clicks.toLocaleString()}</td>
+                    <td className={`py-4 px-4 whitespace-nowrap tabular-nums ${scoreAndColor('meta', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
+                    <td className="py-4 px-4 text-w-hi whitespace-nowrap tabular-nums">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    <td className={`py-4 px-4 whitespace-nowrap tabular-nums ${c.cpc > 0 ? scoreAndColor('meta', 'cpc', c.cpc) : 'text-w-mid'}`}>{c.cpc > 0 ? `$${c.cpc.toFixed(2)}` : '—'}</td>
+                    <td className="py-4 px-4 text-w-hi whitespace-nowrap tabular-nums">{c.conversions > 0 ? c.conversions.toLocaleString() : '—'}</td>
                   </tr>
                 );
               })}

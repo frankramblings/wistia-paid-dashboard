@@ -20,22 +20,15 @@ interface KPI {
   channelColor: string;
 }
 
-function KPICard({ label, value, status, channel, channelColor }: KPI) {
-  const valClass = {
-    good:    'text-w-good',
-    warn:    'text-w-warn',
-    poor:    'text-w-poor',
-    neutral: 'text-w-hi',
-  }[status];
-
+function KPICard({ label, value, channel, channelColor }: KPI) {
   return (
-    <div className="bg-w-surface border border-w-border rounded-lg p-4 shadow-card">
-      <div className="flex items-center gap-1.5 mb-2">
-        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: channelColor }} />
-        <span className="text-xs font-medium text-w-mid">{channel}</span>
+    <div className="bg-[#f0f0f3] rounded-2xl p-5">
+      <div className="font-walsheim text-[14px] font-semibold text-w-hi mb-2 truncate">{label}</div>
+      <div className="font-walsheim text-[26px] font-bold text-w-hi tabular-nums tracking-tight">{value}</div>
+      <div className="flex items-center gap-1.5 mt-2">
+        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: channelColor }} />
+        <span className="text-xs text-w-mid">{channel}</span>
       </div>
-      <div className={`text-xl font-medium ${valClass}`}>{value}</div>
-      <div className="text-w-mid text-xs mt-1.5 truncate">{label}</div>
     </div>
   );
 }
@@ -140,34 +133,32 @@ export default function OverviewPage() {
   return (
     <div>
       {/* Page header */}
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-w-hi">Overview</h1>
-          {totalSpend > 0 && (
-            <p className="text-w-mid text-sm mt-0.5">
-              ${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })} total spend
-            </p>
-          )}
+      <div className="mb-2">
+        <h1 className="font-bold text-w-hi">Overview</h1>
+        {totalSpend > 0 && (
+          <p className="text-w-mid text-sm mt-1">
+            ${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })} total spend
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-2 flex-wrap justify-end mb-6">
+        <div className="flex gap-1">
+          {DATE_RANGES.map(({ label, days }) => (
+            <button key={label} onClick={() => handleRangeChange(days)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                selectedDays === days
+                  ? 'bg-w-blue-bg border border-w-blue-border text-w-blue-text font-semibold'
+                  : 'bg-w-surface border border-w-border text-w-mid hover:text-w-hi'
+              }`}>
+              {label}
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          <div className="flex gap-1">
-            {DATE_RANGES.map(({ label, days }) => (
-              <button key={label} onClick={() => handleRangeChange(days)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  selectedDays === days
-                    ? 'bg-w-blue text-white'
-                    : 'bg-w-surface border border-w-border text-w-mid hover:text-w-hi'
-                }`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          {lastRefresh && <span className="text-w-mid text-xs hidden sm:block">{lastRefresh}</span>}
-          <button onClick={() => refresh()} disabled={loading}
-            className="px-4 py-1.5 bg-w-blue hover:bg-[#1f38c5] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
-            {loading ? 'Refreshing…' : '↻ Refresh'}
-          </button>
-        </div>
+        {lastRefresh && <span className="text-w-mid text-xs hidden sm:block">{lastRefresh}</span>}
+        <button onClick={() => refresh()} disabled={loading}
+          className="px-4 py-1.5 bg-w-hi hover:bg-[#0f0f1a] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
+          {loading ? 'Refreshing…' : '↻ Refresh'}
+        </button>
       </div>
 
       <AISummary summary={summary} loading={loading} />

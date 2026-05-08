@@ -2,12 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('/fonts/GT-Walsheim-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('/fonts/GT-Walsheim-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('/fonts/GT-Walsheim-Black.ttf') format('truetype');
+  font-weight: 800;
+  font-display: swap;
+}
+
 @layer base {
   html, body {
-    background: #f8f8f9;
-    color: #37373c;
+    background: #ffffff;
+    color: #202024;
   }
   input, select, textarea, button {
     font-family: inherit;
+  }
+  h1 {
+    font-family: 'GT Walsheim', var(--font-inter), sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #202024;
+  }
+  h2 {
+    font-family: 'GT Walsheim', var(--font-inter), sans-serif;
   }
 }

@@ -18,7 +18,7 @@ export default function BenchmarkBadge({
   const c = CONFIG[status];
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${c.bg} ${c.text}`}
       title={signals?.join(' · ')}
     >
       {c.label}

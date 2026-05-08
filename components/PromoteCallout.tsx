@@ -4,9 +4,9 @@ export default function PromoteCallout({ ads }: { ads: YouTubeAdRow[] }) {
   const toPromote = ads.filter(a => a.evaluation?.status === 'promote');
   if (toPromote.length === 0) return null;
   return (
-    <div className="mb-6 bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+    <div className="mb-6 bg-w-surface border border-w-border rounded-2xl shadow-card overflow-hidden">
       <div className="px-5 py-4 border-b border-w-border">
-        <div className="text-sm font-semibold text-w-hi">Creative opportunities</div>
+        <div className="font-walsheim text-sm font-semibold text-w-hi">Creative opportunities</div>
         <div className="text-xs text-w-mid mt-0.5">
           These Shorts are ready to test in demand gen based on completion and interaction rates.
         </div>

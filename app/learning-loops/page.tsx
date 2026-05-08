@@ -87,7 +87,7 @@ export default function LearningLoopsPage() {
     <div>
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-w-hi">Learning Loops</h1>
+          <h1 className="font-bold text-w-hi">Learning Loops</h1>
           <p className="text-w-mid text-sm mt-0.5">Tag top assets by hook type and topic, then find patterns</p>
         </div>
         <div className="flex gap-2">
@@ -96,42 +96,42 @@ export default function LearningLoopsPage() {
             {loading ? 'Loading…' : '↻ Refresh'}
           </button>
           <button onClick={analyzePatterns} disabled={analyzing || assets.length === 0}
-            className="px-4 py-1.5 bg-w-blue hover:bg-[#1f38c5] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
+            className="px-4 py-1.5 bg-w-hi hover:bg-[#0f0f1a] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
             {analyzing ? 'Analyzing…' : '✦ Find Patterns'}
           </button>
         </div>
       </div>
 
       {pattern && (
-        <div className="mb-6 bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+        <div className="mb-6 bg-[#f9f9fb] border border-w-border rounded-2xl overflow-hidden">
           <div className="px-5 py-3.5 border-b border-w-border">
-            <div className="text-xs font-semibold text-w-mid uppercase tracking-wider">✦ Pattern Analysis</div>
+            <div className="font-walsheim text-sm font-semibold text-w-hi">✦ Pattern Analysis</div>
           </div>
-          <div className="mx-5 my-4 px-4 py-3 bg-w-blue-bg rounded-lg border-l-4 border-w-blue">
+          <div className="mx-5 my-4 px-4 py-3 bg-w-blue-bg rounded-md border-l-4 border-w-blue">
             <p className="text-sm text-w-hi leading-relaxed">{pattern}</p>
           </div>
         </div>
       )}
 
-      <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-w-border">
-                <th className="text-left py-3 px-5 text-xs font-medium text-w-mid">Asset</th>
-                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Format</th>
-                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Primary Metric</th>
-                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Hook Type</th>
-                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Topic</th>
+              <tr className="bg-white border-b border-[#ebebed]">
+                <th className="text-left py-4 px-4 font-walsheim text-sm font-semibold text-w-hi">Asset</th>
+                <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-left whitespace-nowrap">Format</th>
+                <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-left whitespace-nowrap">Primary Metric</th>
+                <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-left whitespace-nowrap">Hook Type</th>
+                <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-left whitespace-nowrap">Topic</th>
               </tr>
             </thead>
             <tbody>
-              {assets.map(a => (
-                <tr key={a.videoId} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
-                  <td className="py-3 px-5 text-w-hi font-medium max-w-xs truncate">{a.title}</td>
-                  <td className="px-5 text-w-mid capitalize whitespace-nowrap">{a.format}</td>
-                  <td className="px-5 text-w-hi whitespace-nowrap tabular-nums">{a.primaryMetric.toFixed(1)}% <span className="text-w-mid">{a.metricLabel}</span></td>
-                  <td className="px-5">
+              {assets.map((a, i) => (
+                <tr key={a.videoId} className={`${i % 2 === 0 ? 'bg-[#f9f9fb]' : 'bg-white'} border-b border-[#ebebed] last:border-0 hover:bg-[#eeeef0] transition-colors`}>
+                  <td className="py-4 px-4 text-w-hi font-medium max-w-xs truncate">{a.title}</td>
+                  <td className="py-4 px-4 text-w-hi capitalize whitespace-nowrap">{a.format}</td>
+                  <td className="py-4 px-4 text-w-hi whitespace-nowrap tabular-nums">{a.primaryMetric.toFixed(1)}% <span className="text-w-mid">{a.metricLabel}</span></td>
+                  <td className="py-4 px-4">
                     <select value={a.hook} onChange={e => updateTag(a.videoId, 'hook', e.target.value)}
                       className="bg-w-canvas border border-w-border rounded px-2 py-1 text-w-hi text-xs focus:outline-none focus:border-w-blue">
                       <option value="">— tag</option>

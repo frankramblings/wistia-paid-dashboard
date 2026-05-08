@@ -9,27 +9,42 @@ module.exports = {
     extend: {
       colors: {
         w: {
-          canvas:      '#f8f8f9',
-          surface:     '#ffffff',
-          border:      '#e3e4e5',
-          hi:          '#37373c',
-          mid:         '#6b7280',
-          blue:        '#2949E5',
-          'blue-bg':   'rgba(41,73,229,0.08)',
-          'blue-light':'#eef0fd',
-          good:        '#268713',
-          'good-bg':   'rgba(38,135,19,0.1)',
-          warn:        '#D1451A',
-          'warn-bg':   'rgba(209,69,26,0.1)',
-          poor:        '#e02525',
-          'poor-bg':   'rgba(224,37,37,0.1)',
+          // Page & surfaces
+          canvas:        '#ffffff',   // page background (pure white)
+          surface:       '#ffffff',   // card surface
+          'surface-alt': '#f0f0f3',   // KPI card bg + row hover
+          // Borders
+          border:        '#e8e8ed',   // neutral border
+          // Text
+          hi:            '#202024',   // primary text
+          mid:           '#6b7280',   // secondary text / labels
+          muted:         '#9ca3af',   // table headers / subtle
+          subtle:        '#c4c7ce',   // very subtle
+          // Brand blue
+          blue:          '#1E7AF0',
+          'blue-hover':  '#1a6dd8',
+          'blue-bg':     '#E8F1FF',   // selected / tint bg
+          'blue-border': '#BFD8FF',   // selected border
+          'blue-text':   '#1E4E8C',   // selected text
+          'blue-light':  '#E8F1FF',
+          // Status — warm palette
+          good:          '#256B3A',
+          'good-bg':     '#E7F6EA',
+          warn:          '#7A5200',
+          'warn-bg':     '#FFF2CC',
+          poor:          '#9B2335',
+          'poor-bg':     '#FFE8EA',
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
+        sans:     ['var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
+        walsheim: ['GT Walsheim', 'var(--font-inter)', 'sans-serif'],
       },
       boxShadow: {
-        card: '0 1px 4px 1px rgba(0,0,0,0.07)',
+        card: '0 1px 2px rgba(0,0,0,0.04)',
+      },
+      borderRadius: {
+        card: '16px',
       },
     },
   },

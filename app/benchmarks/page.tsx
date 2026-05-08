@@ -35,32 +35,32 @@ export default function BenchmarksPage() {
     <div>
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-w-hi">Benchmarks</h1>
+          <h1 className="font-bold text-w-hi">Benchmarks</h1>
           <p className="text-w-mid text-sm mt-0.5">Edit thresholds — changes affect all status badges across the dashboard</p>
         </div>
         <button onClick={save}
           className={`px-4 py-1.5 text-white text-xs font-medium rounded-full transition-colors ${
-            saved ? 'bg-w-good' : 'bg-w-blue hover:bg-[#1f38c5]'
+            saved ? 'bg-w-good' : 'bg-w-hi hover:bg-[#0f0f1a]'
           }`}>
           {saved ? '✓ Saved' : 'Save'}
         </button>
       </div>
 
-      <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="border-b border-w-border">
-              <th className="text-left py-3 px-5 text-xs font-medium text-w-mid">Metric</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid text-center">Unit</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid text-center">Min (Good)</th>
-              <th className="py-3 px-5 text-xs font-medium text-w-mid text-center">Max (Strong)</th>
+            <tr className="bg-white border-b border-[#ebebed]">
+              <th className="text-left py-4 px-4 font-walsheim text-sm font-semibold text-w-hi">Metric</th>
+              <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-center">Unit</th>
+              <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-center">Min (Good)</th>
+              <th className="py-4 px-4 font-walsheim text-sm font-semibold text-w-hi text-center">Max (Strong)</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(row => (
-              <tr key={row.id} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
-                <td className="py-3 px-5 text-w-hi">{row.label}</td>
-                <td className="px-5 text-w-mid text-center">{row.unit}</td>
+            {rows.map((row, i) => (
+              <tr key={row.id} className={`${i % 2 === 0 ? 'bg-[#f9f9fb]' : 'bg-white'} border-b border-[#ebebed] last:border-0 hover:bg-[#eeeef0] transition-colors`}>
+                <td className="py-4 px-4 text-w-hi">{row.label}</td>
+                <td className="py-4 px-4 text-w-hi text-center">{row.unit}</td>
                 <td className="px-5 text-center">
                   <input
                     type="number" step="0.1" value={row.min ?? ''}
