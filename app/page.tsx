@@ -34,7 +34,7 @@ function KPICard({ label, value, status, channel, channelColor }: KPI) {
         <div className="w-2 h-2 rounded-full shrink-0" style={{ background: channelColor }} />
         <span className="text-xs font-medium text-w-mid">{channel}</span>
       </div>
-      <div className={`font-bebas text-3xl leading-none ${valClass}`}>{value}</div>
+      <div className={`text-xl font-medium ${valClass}`}>{value}</div>
       <div className="text-w-mid text-xs mt-1.5 truncate">{label}</div>
     </div>
   );

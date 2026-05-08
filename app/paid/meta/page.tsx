@@ -108,7 +108,7 @@ export default function MetaAdsPage() {
           ].map(({ label, value }) => (
             <div key={label} className="bg-w-surface rounded-lg p-4 border border-w-border shadow-card">
               <div className="text-w-mid text-xs font-medium mb-2">{label}</div>
-              <div className="text-w-hi font-bebas text-3xl leading-none">{value}</div>
+              <div className="text-w-hi text-xl font-medium">{value}</div>
             </div>
           ))}
         </div>

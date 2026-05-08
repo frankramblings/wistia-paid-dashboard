@@ -6,7 +6,7 @@ export default function KPIStrip({ kpis }: { kpis: KPI[] }) {
       {kpis.map(k => (
         <div key={k.label} className="bg-w-surface rounded-lg p-4 border border-w-border shadow-card">
           <div className="text-w-mid text-xs font-medium mb-2">{k.label}</div>
-          <div className={`font-bebas text-3xl leading-none ${
+          <div className={`text-xl font-medium ${
             k.status === 'good'    ? 'text-w-good' :
             k.status === 'warning' ? 'text-w-warn' : 'text-w-hi'
           }`}>
