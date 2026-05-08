@@ -7,4 +7,7 @@
     background: #f8f8f9;
     color: #181d1f;
   }
+  input, select, textarea, button {
+    font-family: inherit;
+  }
 }
