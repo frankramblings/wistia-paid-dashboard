@@ -14,14 +14,25 @@ export default function CrossPlatformTable({ rows }: { rows: PlatformRow[] }) {
   const totalSpend = rows.reduce((s, r) => s + r.spend, 0);
 
   return (
-    <div className="mb-6">
-      <h2 className="text-[8px] font-bold text-bone-mid uppercase tracking-[.22em] mb-3">Platform Efficiency</h2>
+    <div className="mb-6 bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-w-border">
+        <h2 className="text-xs font-semibold text-w-mid uppercase tracking-wider">Platform Efficiency</h2>
+      </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
+        <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="text-bone-mid uppercase border-b border-bone-border">
-              {['Platform', 'Spend', 'Share', 'Impressions', 'CPM', 'Clicks', 'CPC', 'Conversions'].map(h => (
-                <th key={h} className="text-left py-2 pr-5 whitespace-nowrap">{h}</th>
+            <tr className="border-b border-w-border">
+              {[
+                { h: 'Platform',    align: 'left'  },
+                { h: 'Spend',       align: 'right' },
+                { h: 'Share',       align: 'right' },
+                { h: 'Impressions', align: 'right' },
+                { h: 'CPM',         align: 'right' },
+                { h: 'Clicks',      align: 'right' },
+                { h: 'CPC',         align: 'right' },
+                { h: 'Conversions', align: 'right' },
+              ].map(({ h, align }) => (
+                <th key={h} className={`py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap text-${align} first:text-left`}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -33,19 +44,17 @@ export default function CrossPlatformTable({ rows }: { rows: PlatformRow[] }) {
               const share = totalSpend > 0 ? (r.spend / totalSpend * 100).toFixed(0) : '0';
 
               return (
-                <tr key={r.platform} className="border-b border-bone-border hover:bg-bone-alt">
-                  <td className="py-2 pr-5 text-bone-hi font-medium">{r.platform}</td>
-                  <td className="pr-5 text-bone-mid">${r.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                  <td className="pr-5 text-bone-mid">{share}%</td>
-                  <td className="pr-5 text-bone-mid">{r.impressions.toLocaleString()}</td>
-                  <td className={`pr-5 ${scoreAndColor(platform, 'cpm', cpm)}`}>
-                    ${cpm.toFixed(2)}
-                  </td>
-                  <td className="pr-5 text-bone-mid">{r.clicks.toLocaleString()}</td>
-                  <td className={`pr-5 ${cpc > 0 ? scoreAndColor(platform, 'cpc', cpc) : 'text-bone-mid'}`}>
+                <tr key={r.platform} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
+                  <td className="py-3 px-5 text-w-hi font-medium">{r.platform}</td>
+                  <td className="py-3 px-5 text-w-mid text-right tabular-nums">${r.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                  <td className="py-3 px-5 text-w-mid text-right tabular-nums">{share}%</td>
+                  <td className="py-3 px-5 text-w-mid text-right tabular-nums">{r.impressions.toLocaleString()}</td>
+                  <td className={`py-3 px-5 text-right tabular-nums ${scoreAndColor(platform, 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
+                  <td className="py-3 px-5 text-w-mid text-right tabular-nums">{r.clicks.toLocaleString()}</td>
+                  <td className={`py-3 px-5 text-right tabular-nums ${cpc > 0 ? scoreAndColor(platform, 'cpc', cpc) : 'text-w-mid'}`}>
                     {cpc > 0 ? `$${cpc.toFixed(2)}` : '—'}
                   </td>
-                  <td className="pr-5 text-bone-mid">{r.conversions > 0 ? r.conversions.toLocaleString() : '—'}</td>
+                  <td className="py-3 px-5 text-w-mid text-right tabular-nums">{r.conversions > 0 ? r.conversions.toLocaleString() : '—'}</td>
                 </tr>
               );
             })}
