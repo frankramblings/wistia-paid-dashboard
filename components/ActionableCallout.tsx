@@ -17,12 +17,12 @@ export default function ActionableCallout({ rules }: Props) {
       {active.map((r, i) => (
         <div
           key={i}
-          className={`flex items-start gap-2 px-4 py-2.5 rounded border text-sm ${
+          className={`flex items-start gap-2 px-4 py-2.5 border text-sm ${
             r.type === 'warn'
-              ? 'bg-orange-950/40 border-orange-800 text-orange-300'
+              ? 'bg-bone-warn-bg border-bone-warn/50 text-bone-warn'
               : r.type === 'good'
-              ? 'bg-green-950/40 border-green-800 text-green-300'
-              : 'bg-blue-950/40 border-blue-800 text-blue-300'
+              ? 'bg-bone-good-bg border-bone-good/50 text-bone-good'
+              : 'bg-bone-info-bg border-bone-border text-bone-mid'
           }`}
         >
           <span className="mt-0.5 shrink-0">

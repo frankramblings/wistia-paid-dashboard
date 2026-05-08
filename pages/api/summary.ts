@@ -9,50 +9,103 @@ interface SummaryRequest {
   dateRange: string;
 }
 
+function fmt$(n: number) { return `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`; }
+function cpm(spend: number, imp: number) { return imp > 0 ? (spend / imp * 1000) : 0; }
+function pct(a: number, b: number) { return b > 0 ? (a / b * 100).toFixed(1) : 'N/A'; }
+function vs(val: number, benchmark: number, higherBetter: boolean) {
+  const above = val > benchmark;
+  return above === higherBetter ? `✓ ${higherBetter ? 'above' : 'below'} benchmark` : `✗ ${higherBetter ? 'below' : 'above'} benchmark`;
+}
+
 function buildPrompt(data: SummaryRequest): string {
+  // ── YouTube ──────────────────────────────────────────
+  const ytSpend = data.youtubeAds.reduce((s, a) => s + a.cost, 0);
   const toPromote = data.youtubeAds.filter(a => a.evaluation?.status === 'promote');
-  const bestCostSub = data.youtubeAds
-    .filter(a => a.format === 'Long-form' && a.earnedSubs > 0)
-    .sort((a, b) => a.costPerConv - b.costPerConv)[0];
+  const bestSub = data.youtubeAds.filter(a => a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
+  const worstCPV = data.youtubeAds.filter(a => a.avgCPV > 0).sort((a, b) => b.avgCPV - a.avgCPV)[0];
+  const bestCompletion = data.youtubeAds.sort((a, b) => b.played100 - a.played100)[0];
 
-  const liTotalSpend = data.linkedinAds.reduce((s, c) => s + c.spend, 0);
-  const liTopCTR = data.linkedinAds.length
-    ? Math.max(...data.linkedinAds.map(c => c.ctr)).toFixed(2)
-    : 'N/A';
+  // ── LinkedIn ─────────────────────────────────────────
+  const liSpend = data.linkedinAds.reduce((s, c) => s + c.spend, 0);
+  const liImp   = data.linkedinAds.reduce((s, c) => s + c.impressions, 0);
+  const liClk   = data.linkedinAds.reduce((s, c) => s + c.clicks, 0);
+  const liTopCampaign = [...data.linkedinAds].sort((a, b) => b.ctr - a.ctr)[0];
+  const liLowCTR = data.linkedinAds.filter(c => c.impressions > 5000 && c.ctr < 0.3);
+  const liCPM = cpm(liSpend, liImp);
+  const liBlendedCTR = liImp > 0 ? (liClk / liImp * 100) : 0;
 
-  const metaTotalSpend = data.metaAds.reduce((s, c) => s + c.spend, 0);
-  const metaBlendedCTR = (() => {
-    const imp = data.metaAds.reduce((s, c) => s + c.impressions, 0);
-    const clk = data.metaAds.reduce((s, c) => s + c.clicks, 0);
-    return imp > 0 ? (clk / imp * 100).toFixed(2) : 'N/A';
-  })();
+  // ── Meta ─────────────────────────────────────────────
+  const metaSpend = data.metaAds.reduce((s, c) => s + c.spend, 0);
+  const metaImp   = data.metaAds.reduce((s, c) => s + c.impressions, 0);
+  const metaClk   = data.metaAds.reduce((s, c) => s + c.clicks, 0);
+  const metaCTR   = metaImp > 0 ? (metaClk / metaImp * 100) : 0;
+  const metaCPM   = cpm(metaSpend, metaImp);
+  const metaBest  = [...data.metaAds].sort((a, b) => b.ctr - a.ctr)[0];
+  const metaEng   = data.metaAds.filter(c => c.objective?.includes('ENGAGEMENT'));
+  const metaTraf  = data.metaAds.filter(c => c.objective?.includes('TRAFFIC'));
+  const metaEngCPM  = cpm(metaEng.reduce((s,c)=>s+c.spend,0), metaEng.reduce((s,c)=>s+c.impressions,0));
+  const metaTrafCPM = cpm(metaTraf.reduce((s,c)=>s+c.spend,0), metaTraf.reduce((s,c)=>s+c.impressions,0));
 
-  const ttTotalSpend = data.tiktokAds.reduce((s, c) => s + c.spend, 0);
-  const ttTotalViews = data.tiktokAds.reduce((s, c) => s + c.videoViews, 0);
-  const ttTotalImp   = data.tiktokAds.reduce((s, c) => s + c.impressions, 0);
-  const ttViewRate   = ttTotalImp > 0 ? (ttTotalViews / ttTotalImp * 100).toFixed(1) : 'N/A';
+  // ── TikTok ───────────────────────────────────────────
+  const ttSpend = data.tiktokAds.reduce((s, c) => s + c.spend, 0);
+  const ttImp   = data.tiktokAds.reduce((s, c) => s + c.impressions, 0);
+  const ttViews = data.tiktokAds.reduce((s, c) => s + c.videoViews, 0);
+  const ttCPV   = ttViews > 0 ? ttSpend / ttViews : 0;
+  const ttBest  = [...data.tiktokAds].sort((a, b) => {
+    const ra = a.impressions > 0 ? a.videoViews / a.impressions : 0;
+    const rb = b.impressions > 0 ? b.videoViews / b.impressions : 0;
+    return rb - ra;
+  })[0];
+  const ttWorst = [...data.tiktokAds].sort((a, b) => {
+    const ra = a.impressions > 0 ? a.videoViews / a.impressions : 0;
+    const rb = b.impressions > 0 ? b.videoViews / b.impressions : 0;
+    return ra - rb;
+  })[0];
+  const ttViewRate = parseFloat(pct(ttViews, ttImp));
 
-  return `You are a content performance analyst. Summarize this dashboard data in 2–3 sentences, then give ONE specific action item.
+  return `You are a blunt paid media analyst. Using ONLY the numbers below, write a 2-sentence narrative that cites specific dollar amounts, percentages, and campaign names. Then give ONE action item that names the exact campaign and exact action (e.g. "Pause X and reallocate $Y to Z").
+
+HARD RULES — violating any of these makes the output useless:
+- Every sentence must contain at least one specific number ($, %, or ratio).
+- Name actual campaigns, not "some campaigns" or "certain platforms".
+- Do NOT write: "mixed performance", "various platforms", "consider", "may want to", "could potentially".
+- Action item must be ONE sentence with a specific campaign name, metric, and action.
 
 Period: ${data.dateRange}
 
-YouTube Ads (paid):
-- ${toPromote.length} short(s) ready to promote to Demand Gen: ${toPromote.map(a => a.adName).join(', ') || 'none'}
-- Best long-form cost/sub: ${bestCostSub ? `$${bestCostSub.costPerConv.toFixed(2)} (${bestCostSub.creator})` : 'N/A'}
+YOUTUBE (${fmt$(ytSpend)} spend):
+- Shorts ready for Demand Gen: ${toPromote.length > 0 ? toPromote.map(a => `"${a.adName}"`).join(', ') : 'none'}
+- Best cost/sub: ${bestSub ? `$${bestSub.costPerConv.toFixed(2)} — "${bestSub.adName}"` : 'N/A'} (benchmark $5.00)
+- Worst CPV: ${worstCPV ? `$${worstCPV.avgCPV.toFixed(3)} — "${worstCPV.adName}"` : 'N/A'} (benchmark $0.030)
+- Best completion: ${bestCompletion ? `${bestCompletion.played100.toFixed(0)}% — "${bestCompletion.adName}"` : 'N/A'} (benchmark 40%)
 
-LinkedIn Ads:
-- Total spend: $${liTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-- Top campaign CTR: ${liTopCTR}% (benchmark 0.6%)
+LINKEDIN (${fmt$(liSpend)} spend):
+- Blended CTR: ${liBlendedCTR.toFixed(2)}% ${vs(liBlendedCTR, 0.6, true)} (0.6%)
+- Blended CPM: $${liCPM.toFixed(2)} ${vs(liCPM, 50, false)} ($50)
+- Top campaign: ${liTopCampaign ? `"${liTopCampaign.name}" at ${liTopCampaign.ctr.toFixed(2)}% CTR` : 'N/A'}
+- Campaigns below 0.3% CTR: ${liLowCTR.length} ${liLowCTR.length > 0 ? `(${liLowCTR.map(c => `"${c.name}"`).join(', ')})` : ''}
 
-Meta Ads (FB + IG):
-- Total spend: $${metaTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-- Blended CTR: ${metaBlendedCTR}% (benchmark 1%)
+META (${fmt$(metaSpend)} spend):
+- Blended CTR: ${metaCTR.toFixed(2)}% ${vs(metaCTR, 1.0, true)} (1.0%)
+- Blended CPM: $${metaCPM.toFixed(2)} ${vs(metaCPM, 8, false)} ($8)
+- Best campaign: ${metaBest ? `"${metaBest.name}" at ${metaBest.ctr.toFixed(2)}% CTR` : 'N/A'}
+${metaEngCPM > 0 && metaTrafCPM > 0 ? `- Engagement CPM $${metaEngCPM.toFixed(2)} vs Traffic CPM $${metaTrafCPM.toFixed(2)} (${(metaTrafCPM / metaEngCPM).toFixed(1)}x difference)` : ''}
 
-TikTok Ads:
-- Total spend: $${ttTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-- Blended video view rate: ${ttViewRate}% (benchmark 30%)
+TIKTOK (${fmt$(ttSpend)} spend):
+- Blended view rate: ${pct(ttViews, ttImp)}% ${vs(ttViewRate, 30, true)} (30%)
+- Cost/view: ${ttCPV > 0 ? `$${ttCPV.toFixed(4)}` : 'N/A'} ${ttCPV > 0 ? vs(ttCPV, 0.02, false) : ''} ($0.020)
+- Best: ${ttBest ? `"${ttBest.name}" at ${pct(ttBest.videoViews, ttBest.impressions)}% view rate` : 'N/A'}
+- Worst: ${ttWorst && ttWorst !== ttBest ? `"${ttWorst.name}" at ${pct(ttWorst.videoViews, ttWorst.impressions)}% view rate` : 'N/A'}
 
-Return JSON: { "narrative": "...", "actionItem": "..." }`;
+Return JSON only — no markdown, no extra text:
+{
+  "insights": [
+    "1 sentence with a specific number and campaign name",
+    "1 sentence with a specific number and campaign name",
+    "1 sentence with a specific number and campaign name"
+  ],
+  "actionItem": "1 sentence naming the exact campaign + exact action + dollar amount if relevant"
+}`;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -70,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 300,
+        max_tokens: 500,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -81,8 +134,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const parsed = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] ?? '{}');
 
     const summary: DashboardSummary = {
-      narrative:   parsed.narrative   ?? 'Summary unavailable.',
-      actionItem:  parsed.actionItem  ?? '',
+      insights:   Array.isArray(parsed.insights) ? parsed.insights : parsed.narrative ? [parsed.narrative] : ['Summary unavailable.'],
+      actionItem: parsed.actionItem ?? '',
       generatedAt: new Date().toISOString(),
     };
 

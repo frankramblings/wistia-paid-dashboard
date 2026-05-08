@@ -50,7 +50,6 @@ export default function TikTokAdsPage() {
   const blendedCPM       = calcCPM(totalSpend, totalImpressions);
   const blendedCPV       = totalVideoViews > 0 ? totalSpend / totalVideoViews : 0;
 
-  // Insights
   const lowViewRate    = campaigns.filter(c => c.impressions > 5000 && (c.videoViews / c.impressions * 100) < 15);
   const bestViewRate   = campaigns.length ? campaigns.slice().sort((a, b) => {
     const ra = a.impressions > 0 ? a.videoViews / a.impressions : 0;
@@ -98,22 +97,22 @@ export default function TikTokAdsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold">TikTok Ads</h1>
         <div className="flex items-center gap-2">
-          <div className="flex bg-gray-900 border border-gray-800 rounded overflow-hidden text-xs">
+          <div className="flex bg-bone-alt border border-bone-border rounded overflow-hidden text-xs">
             {DATE_RANGES.map(({ label, days }) => (
               <button
                 key={label}
                 onClick={() => handleRangeChange(days)}
                 className={`px-3 py-1.5 transition-colors ${
                   selectedDays === days
-                    ? 'bg-red-600 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    ? 'bg-bone-hi text-bone-bg'
+                    : 'text-bone-mid hover:text-bone-hi hover:bg-bone-border/40'
                 }`}
               >
                 {label}
               </button>
             ))}
           </div>
-          {lastRefresh && <span className="text-gray-500 text-xs hidden sm:block">Refreshed {lastRefresh}</span>}
+          {lastRefresh && <span className="text-bone-mid text-xs hidden sm:block">Refreshed {lastRefresh}</span>}
           <button onClick={() => refresh()} disabled={loading}
             className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm rounded">
             {loading ? 'Loading…' : '↻'}
@@ -122,7 +121,7 @@ export default function TikTokAdsPage() {
       </div>
 
       {notConfigured && (
-        <div className="mb-6 px-4 py-3 bg-yellow-900/40 border border-yellow-700 rounded text-yellow-300 text-sm">
+        <div className="mb-6 px-4 py-3 bg-bone-warn-bg border border-bone-warn/50 text-bone-warn text-sm">
           TikTok Ads not configured. Add TIKTOK_ACCESS_TOKEN and TIKTOK_ADVERTISER_ID to environment variables.
         </div>
       )}
@@ -132,16 +131,16 @@ export default function TikTokAdsPage() {
       {campaigns.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
           {[
-            { label: 'Total Spend',    value: `$${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
-            { label: 'Video Views',    value: totalVideoViews.toLocaleString() },
-            { label: 'View Rate',      value: `${blendedViewRate.toFixed(1)}%` },
-            { label: 'Cost / View',    value: blendedCPV > 0 ? `$${blendedCPV.toFixed(3)}` : '—' },
-            { label: 'Blended CPM',    value: `$${blendedCPM.toFixed(2)}` },
-            { label: 'Impressions',    value: totalImpressions.toLocaleString() },
+            { label: 'Total Spend',  value: `$${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
+            { label: 'Video Views',  value: totalVideoViews.toLocaleString() },
+            { label: 'View Rate',    value: `${blendedViewRate.toFixed(1)}%` },
+            { label: 'Cost / View',  value: blendedCPV > 0 ? `$${blendedCPV.toFixed(3)}` : '—' },
+            { label: 'Blended CPM',  value: `$${blendedCPM.toFixed(2)}` },
+            { label: 'Impressions',  value: totalImpressions.toLocaleString() },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-gray-900 rounded p-3 border border-gray-800">
-              <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">{label}</div>
-              <div className="text-white text-lg font-semibold">{value}</div>
+            <div key={label} className="bg-bone-alt rounded p-3 border border-bone-border">
+              <div className="text-bone-mid text-[10px] uppercase tracking-wide mb-1">{label}</div>
+              <div className="text-bone-hi font-bebas text-3xl leading-none">{value}</div>
             </div>
           ))}
         </div>
@@ -150,7 +149,7 @@ export default function TikTokAdsPage() {
       <div className="overflow-x-auto">
         <table className="w-full text-xs border-collapse">
           <thead>
-            <tr className="text-gray-500 uppercase border-b border-gray-800">
+            <tr className="text-bone-mid uppercase border-b border-bone-border">
               {['Campaign', 'Video Views', 'View Rate', 'Cost/View', 'CPM', 'Spend', 'CTR', 'CPC'].map(h => (
                 <th key={h} className="text-left py-2 pr-4 whitespace-nowrap">{h}</th>
               ))}
@@ -162,19 +161,19 @@ export default function TikTokAdsPage() {
               const cpv      = c.videoViews > 0 ? c.spend / c.videoViews : 0;
               const cpm      = calcCPM(c.spend, c.impressions);
               return (
-                <tr key={c.campaignId} className="border-b border-gray-900 hover:bg-gray-900/50">
-                  <td className="py-2 pr-4 text-white">{c.name}</td>
-                  <td className="pr-4 text-gray-300 whitespace-nowrap">{c.videoViews.toLocaleString()}</td>
+                <tr key={c.campaignId} className="border-b border-bone-border hover:bg-bone-alt">
+                  <td className="py-2 pr-4 text-bone-hi">{c.name}</td>
+                  <td className="pr-4 text-bone-mid whitespace-nowrap">{c.videoViews.toLocaleString()}</td>
                   <td className={`pr-4 whitespace-nowrap ${scoreAndColor('tiktok', 'viewRate', viewRate)}`}>
                     {viewRate.toFixed(1)}%
                   </td>
-                  <td className={`pr-4 whitespace-nowrap ${cpv > 0 ? scoreAndColor('tiktok', 'cpv', cpv) : 'text-gray-500'}`}>
+                  <td className={`pr-4 whitespace-nowrap ${cpv > 0 ? scoreAndColor('tiktok', 'cpv', cpv) : 'text-bone-mid'}`}>
                     {cpv > 0 ? `$${cpv.toFixed(3)}` : '—'}
                   </td>
                   <td className={`pr-4 whitespace-nowrap ${scoreAndColor('tiktok', 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
-                  <td className="pr-4 text-gray-300 whitespace-nowrap">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                  <td className="pr-4 text-bone-mid whitespace-nowrap">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
                   <td className={`pr-4 whitespace-nowrap ${scoreAndColor('tiktok', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
-                  <td className={`pr-4 whitespace-nowrap ${c.cpc > 0 ? scoreAndColor('tiktok', 'cpc', c.cpc) : 'text-gray-500'}`}>
+                  <td className={`pr-4 whitespace-nowrap ${c.cpc > 0 ? scoreAndColor('tiktok', 'cpc', c.cpc) : 'text-bone-mid'}`}>
                     {c.cpc > 0 ? `$${c.cpc.toFixed(2)}` : '—'}
                   </td>
                 </tr>
@@ -183,7 +182,7 @@ export default function TikTokAdsPage() {
           </tbody>
         </table>
         {campaigns.length === 0 && !loading && !notConfigured && (
-          <p className="text-gray-600 text-sm py-8 text-center">No data — click ↻</p>
+          <p className="text-bone-mid text-sm py-8 text-center">No data — click ↻</p>
         )}
       </div>
     </div>

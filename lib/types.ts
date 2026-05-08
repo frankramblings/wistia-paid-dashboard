@@ -127,7 +127,7 @@ export interface TikTokAdCampaign {
 }
 
 export interface DashboardSummary {
-  narrative: string;
+  insights: string[];   // 2-3 bullet points
   actionItem: string;
   generatedAt: string;
 }

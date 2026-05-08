@@ -23,7 +23,6 @@ export default function PaidPage() {
   useEffect(() => { refresh(); }, []);
 
   const creators = Array.from(new Set(ads.map(a => a.creator)));
-  const totalSpendAll = ads.reduce((s, a) => s + a.cost, 0);
   const poorCPV = ads.filter(a => a.avgCPV > 0.03);
   const strongCompletion = ads.filter(a => a.played100 >= 40);
   const bestSub = ads.filter(a => a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
@@ -68,7 +67,7 @@ export default function PaidPage() {
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-xs border-collapse">
           <thead>
-            <tr className="text-gray-500 uppercase border-b border-gray-800">
+            <tr className="text-bone-mid uppercase border-b border-bone-border">
               {['Ad / Creator','Format','Completion','Int. Rate','CPV','Earned Subs','Cost/Sub','Status'].map(h => (
                 <th key={h} className="text-left py-2 pr-3">{h}</th>
               ))}
@@ -76,12 +75,12 @@ export default function PaidPage() {
           </thead>
           <tbody>
             {ads.map(ad => (
-              <tr key={ad.adName} className="border-b border-gray-900 hover:bg-gray-900/50">
+              <tr key={ad.adName} className="border-b border-bone-border hover:bg-bone-alt">
                 <td className="py-2 pr-3">
-                  <div className="text-white font-medium">{ad.adName}</div>
-                  <div className="text-gray-500">{ad.creator}</div>
+                  <div className="text-bone-hi font-medium">{ad.adName}</div>
+                  <div className="text-bone-mid">{ad.creator}</div>
                 </td>
-                <td className="pr-3 text-gray-400">{ad.format}</td>
+                <td className="pr-3 text-bone-mid">{ad.format}</td>
                 <td className={`pr-3 ${scoreAndColor('youtube', 'played100', ad.played100)}`}>
                   {ad.played100.toFixed(1)}%
                 </td>
@@ -89,8 +88,8 @@ export default function PaidPage() {
                   {ad.interactionRate.toFixed(1)}%
                 </td>
                 <td className={`pr-3 ${scoreAndColor('youtube', 'avgCPV', ad.avgCPV)}`}>${ad.avgCPV.toFixed(3)}</td>
-                <td className="pr-3 text-gray-300">{ad.earnedSubs || '—'}</td>
-                <td className="pr-3 text-gray-300">
+                <td className="pr-3 text-bone-mid">{ad.earnedSubs || '—'}</td>
+                <td className="pr-3 text-bone-mid">
                   {ad.earnedSubs > 0 ? `$${ad.costPerConv.toFixed(2)}` : '—'}
                 </td>
                 <td>{ad.evaluation && <BenchmarkBadge status={ad.evaluation.status} signals={ad.evaluation.signals} />}</td>
@@ -100,7 +99,7 @@ export default function PaidPage() {
         </table>
       </div>
 
-      <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Creator Comparison</h2>
+      <h2 className="text-[8px] font-bold text-bone-mid uppercase tracking-[.22em] mb-3">Creator Comparison</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {creators.map(creator => {
           const creatorAds = ads.filter(a => a.creator === creator);
@@ -108,12 +107,12 @@ export default function PaidPage() {
           const bestCost  = creatorAds.filter(a => a.earnedSubs > 0).sort((a,b) => a.costPerConv - b.costPerConv)[0];
           const totalSpend = creatorAds.reduce((s, a) => s + a.cost, 0);
           return (
-            <div key={creator} className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <div className="font-bold text-white mb-3">{creator}</div>
+            <div key={creator} className="bg-bone-alt p-4 border border-bone-border">
+              <div className="font-semibold text-bone-hi mb-3">{creator}</div>
               <div className="space-y-1 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Total Spend</span><span>${totalSpend.toFixed(0)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Earned Subs</span><span className="text-green-400">{totalSubs}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Best Cost/Sub</span><span className="text-green-400">{bestCost ? `$${bestCost.costPerConv.toFixed(2)}` : '—'}</span></div>
+                <div className="flex justify-between"><span className="text-bone-mid">Total Spend</span><span className="text-bone-hi">${totalSpend.toFixed(0)}</span></div>
+                <div className="flex justify-between"><span className="text-bone-mid">Earned Subs</span><span className="text-bone-good">{totalSubs}</span></div>
+                <div className="flex justify-between"><span className="text-bone-mid">Best Cost/Sub</span><span className="text-bone-good">{bestCost ? `$${bestCost.costPerConv.toFixed(2)}` : '—'}</span></div>
               </div>
             </div>
           );

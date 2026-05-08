@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import AISummary from '@/components/AISummary';
 import PromoteCallout from '@/components/PromoteCallout';
-import KPIStrip from '@/components/KPIStrip';
 import CrossPlatformTable from '@/components/CrossPlatformTable';
+import { calcCPM } from '@/lib/platformBenchmarks';
 import type { YouTubeAdRow, LinkedInCampaign, MetaCampaign, TikTokAdCampaign, DashboardSummary } from '@/lib/types';
 
 const DATE_RANGES = [
@@ -12,6 +12,35 @@ const DATE_RANGES = [
   { label: 'Last 60d', days: 60 },
   { label: 'Last 90d', days: 90 },
 ];
+
+interface KPI {
+  label: string;
+  value: string;
+  status: 'good' | 'warn' | 'poor' | 'neutral';
+  channel: string;
+  channelColor: string;
+}
+
+function KPICard({ label, value, status, channel, channelColor }: KPI) {
+  const valClass = {
+    good:    'text-bone-good',
+    warn:    'text-bone-warn',
+    poor:    'text-bone-poor',
+    neutral: 'text-bone-hi',
+  }[status];
+
+  return (
+    <div className="bg-bone-alt border border-bone-border relative overflow-hidden p-3">
+      <div className="flex items-center gap-1.5 mb-2">
+        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: channelColor }} />
+        <span className="text-[8px] font-bold uppercase tracking-[.14em] text-bone-mid">{channel}</span>
+      </div>
+      <div className={`font-bebas text-3xl leading-none ${valClass}`}>{value}</div>
+      <div className="text-bone-mid text-[9px] uppercase tracking-wide mt-1 truncate">{label}</div>
+      <div className="absolute bottom-0 left-0 w-0.5 top-0" style={{ background: channelColor }} />
+    </div>
+  );
+}
 
 export default function OverviewPage() {
   const [ytAds, setYtAds] = useState<YouTubeAdRow[]>([]);
@@ -33,84 +62,79 @@ export default function OverviewPage() {
         fetch(`/api/data/meta-ads${qs}`).then(r => r.json()),
         fetch(`/api/data/tiktok-ads${qs}`).then(r => r.json()),
       ]);
-      const ads: YouTubeAdRow[]       = adsRes.ads ?? [];
-      const li: LinkedInCampaign[]    = liRes.campaigns ?? [];
-      const meta: MetaCampaign[]      = metaRes.campaigns ?? [];
-      const tt: TikTokAdCampaign[]    = ttRes.campaigns ?? [];
-      setYtAds(ads);
-      setLiAds(li);
-      setMetaAds(meta);
-      setTtAds(tt);
+      const ads: YouTubeAdRow[]    = adsRes.ads ?? [];
+      const li: LinkedInCampaign[] = liRes.campaigns ?? [];
+      const meta: MetaCampaign[]   = metaRes.campaigns ?? [];
+      const tt: TikTokAdCampaign[] = ttRes.campaigns ?? [];
+      setYtAds(ads); setLiAds(li); setMetaAds(meta); setTtAds(tt);
 
       const summaryRes = await fetch('/api/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          youtubeAds: ads,
-          linkedinAds: li,
-          metaAds: meta,
-          tiktokAds: tt,
+          youtubeAds: ads, linkedinAds: li, metaAds: meta, tiktokAds: tt,
           dateRange: DATE_RANGES.find(r => r.days === days)?.label ?? 'Custom',
         }),
       });
       setSummary(await summaryRes.json());
       setLastRefresh(new Date().toLocaleString());
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  const handleRangeChange = (days: number) => {
-    setSelectedDays(days);
-    refresh(days);
-  };
-
+  const handleRangeChange = (days: number) => { setSelectedDays(days); refresh(days); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { refresh(selectedDays); }, []);
 
-  const toPromote      = ytAds.filter(a => a.evaluation?.status === 'promote');
-  const bestCostSub    = ytAds.filter(a => a.format === 'Long-form' && a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
-  const totalEarnedSubs = ytAds.reduce((s, a) => s + a.earnedSubs, 0);
-  const liTotalSpend   = liAds.reduce((s, c) => s + c.spend, 0);
-  const liTopCTR       = liAds.length ? Math.max(...liAds.map(c => c.ctr)).toFixed(2) : '—';
+  // ── YouTube ──────────────────────────────────────────
+  const ytSpend     = ytAds.reduce((s, a) => s + a.cost, 0);
+  const ytEarnedSubs = ytAds.reduce((s, a) => s + a.earnedSubs, 0);
+  const bestCostSub = ytAds.filter(a => a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
 
-  const kpis = [
-    { label: 'YT Shorts to Promote', value: String(toPromote.length),   status: toPromote.length > 0 ? 'good' as const : 'neutral' as const },
-    { label: 'Best Cost/Sub (YT)',    value: bestCostSub ? `$${bestCostSub.costPerConv.toFixed(2)}` : '—', status: 'good' as const },
-    { label: 'YT Earned Subs',        value: String(totalEarnedSubs),    status: 'good' as const },
-    { label: 'LI Spend',              value: `$${liTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, status: 'neutral' as const },
-    { label: 'LI Top Campaign CTR',   value: `${liTopCTR}%`,            status: parseFloat(liTopCTR) >= 1 ? 'good' as const : 'warning' as const },
+  // ── LinkedIn ─────────────────────────────────────────
+  const liSpend = liAds.reduce((s, c) => s + c.spend, 0);
+  const liImp   = liAds.reduce((s, c) => s + c.impressions, 0);
+  const liClk   = liAds.reduce((s, c) => s + c.clicks, 0);
+  const liCTR   = liImp > 0 ? (liClk / liImp * 100) : 0;
+  const liCPM   = calcCPM(liSpend, liImp);
+
+  // ── Meta ─────────────────────────────────────────────
+  const metaSpend = metaAds.reduce((s, c) => s + c.spend, 0);
+  const metaImp   = metaAds.reduce((s, c) => s + c.impressions, 0);
+  const metaClk   = metaAds.reduce((s, c) => s + c.clicks, 0);
+  const metaCTR   = metaImp > 0 ? (metaClk / metaImp * 100) : 0;
+  const metaCPM   = calcCPM(metaSpend, metaImp);
+
+  // ── TikTok ───────────────────────────────────────────
+  const ttSpend    = ttAds.reduce((s, c) => s + c.spend, 0);
+  const ttImp      = ttAds.reduce((s, c) => s + c.impressions, 0);
+  const ttViews    = ttAds.reduce((s, c) => s + c.videoViews, 0);
+  const ttViewRate = ttImp > 0 ? (ttViews / ttImp * 100) : 0;
+  const ttCPV      = ttViews > 0 ? ttSpend / ttViews : 0;
+
+  const kpis: KPI[] = [
+    ...(ytSpend > 0 ? [
+      { label: 'Earned Subs', value: String(ytEarnedSubs), channel: 'YouTube', channelColor: '#ff4444', status: (ytEarnedSubs > 0 ? 'good' : 'neutral') as KPI['status'] },
+      { label: 'Best Cost / Sub', value: bestCostSub ? `$${bestCostSub.costPerConv.toFixed(2)}` : '—', channel: 'YouTube', channelColor: '#ff4444', status: (bestCostSub ? (bestCostSub.costPerConv < 5 ? 'good' : bestCostSub.costPerConv < 10 ? 'warn' : 'poor') : 'neutral') as KPI['status'] },
+    ] : []),
+    ...(liSpend > 0 ? [
+      { label: 'Blended CTR', value: `${liCTR.toFixed(2)}%`, channel: 'LinkedIn', channelColor: '#4d9fd4', status: (liCTR >= 0.6 ? 'good' : liCTR >= 0.3 ? 'warn' : 'poor') as KPI['status'] },
+      { label: 'CPM', value: `$${liCPM.toFixed(2)}`, channel: 'LinkedIn', channelColor: '#4d9fd4', status: (liCPM <= 50 ? 'good' : liCPM <= 90 ? 'warn' : 'poor') as KPI['status'] },
+    ] : []),
+    ...(metaSpend > 0 ? [
+      { label: 'Blended CTR', value: `${metaCTR.toFixed(2)}%`, channel: 'Meta', channelColor: '#4d8ef0', status: (metaCTR >= 1.0 ? 'good' : metaCTR >= 0.5 ? 'warn' : 'poor') as KPI['status'] },
+      { label: 'Blended CPM', value: `$${metaCPM.toFixed(2)}`, channel: 'Meta', channelColor: '#4d8ef0', status: (metaCPM <= 8 ? 'good' : metaCPM <= 20 ? 'warn' : 'poor') as KPI['status'] },
+    ] : []),
+    ...(ttSpend > 0 ? [
+      { label: 'View Rate', value: `${ttViewRate.toFixed(0)}%`, channel: 'TikTok', channelColor: '#69c9d0', status: (ttViewRate >= 30 ? 'good' : ttViewRate >= 15 ? 'warn' : 'poor') as KPI['status'] },
+      { label: 'Cost / View', value: ttCPV > 0 ? `$${ttCPV.toFixed(3)}` : '—', channel: 'TikTok', channelColor: '#69c9d0', status: (ttCPV > 0 ? (ttCPV <= 0.02 ? 'good' : ttCPV <= 0.06 ? 'warn' : 'poor') : 'neutral') as KPI['status'] },
+    ] : []),
   ];
 
   const platformRows = [
-    {
-      platform: 'YouTube Ads',
-      spend: ytAds.reduce((s, a) => s + a.cost, 0),
-      impressions: ytAds.reduce((s, a) => s + a.impressions, 0),
-      clicks: ytAds.reduce((s, a) => s + a.interactions, 0),
-      conversions: ytAds.reduce((s, a) => s + a.conversions, 0),
-    },
-    {
-      platform: 'LinkedIn',
-      spend: liAds.reduce((s, c) => s + c.spend, 0),
-      impressions: liAds.reduce((s, c) => s + c.impressions, 0),
-      clicks: liAds.reduce((s, c) => s + c.clicks, 0),
-      conversions: liAds.reduce((s, c) => s + c.conversions, 0),
-    },
-    {
-      platform: 'Meta',
-      spend: metaAds.reduce((s, c) => s + c.spend, 0),
-      impressions: metaAds.reduce((s, c) => s + c.impressions, 0),
-      clicks: metaAds.reduce((s, c) => s + c.clicks, 0),
-      conversions: metaAds.reduce((s, c) => s + c.conversions, 0),
-    },
-    {
-      platform: 'TikTok',
-      spend: ttAds.reduce((s, c) => s + c.spend, 0),
-      impressions: ttAds.reduce((s, c) => s + c.impressions, 0),
-      clicks: ttAds.reduce((s, c) => s + c.clicks, 0),
-      conversions: ttAds.reduce((s, c) => s + c.conversions, 0),
-    },
+    { platform: 'YouTube Ads', spend: ytSpend, impressions: ytAds.reduce((s,a)=>s+a.impressions,0), clicks: ytAds.reduce((s,a)=>s+a.interactions,0), conversions: ytAds.reduce((s,a)=>s+a.conversions,0) },
+    { platform: 'LinkedIn',    spend: liSpend, impressions: liImp, clicks: liClk, conversions: liAds.reduce((s,c)=>s+c.conversions,0) },
+    { platform: 'Meta',        spend: metaSpend, impressions: metaImp, clicks: metaClk, conversions: metaAds.reduce((s,c)=>s+c.conversions,0) },
+    { platform: 'TikTok',      spend: ttSpend, impressions: ttImp, clicks: ttAds.reduce((s,c)=>s+c.clicks,0), conversions: 0 },
   ].filter(r => r.spend > 0);
 
   return (
@@ -118,22 +142,15 @@ export default function OverviewPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold">Overview</h1>
         <div className="flex items-center gap-2">
-          <div className="flex bg-gray-900 border border-gray-800 rounded overflow-hidden text-xs">
+          <div className="flex bg-bone-alt border border-bone-border rounded overflow-hidden text-xs">
             {DATE_RANGES.map(({ label, days }) => (
-              <button
-                key={label}
-                onClick={() => handleRangeChange(days)}
-                className={`px-3 py-1.5 transition-colors ${
-                  selectedDays === days
-                    ? 'bg-red-600 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
-              >
+              <button key={label} onClick={() => handleRangeChange(days)}
+                className={`px-3 py-1.5 transition-colors ${selectedDays === days ? 'bg-bone-hi text-bone-bg' : 'text-bone-mid hover:text-bone-hi hover:bg-bone-border/40'}`}>
                 {label}
               </button>
             ))}
           </div>
-          {lastRefresh && <span className="text-gray-500 text-xs hidden sm:block">Refreshed {lastRefresh}</span>}
+          {lastRefresh && <span className="text-bone-mid text-xs hidden sm:block">Refreshed {lastRefresh}</span>}
           <button onClick={() => refresh()} disabled={loading}
             className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm rounded">
             {loading ? 'Refreshing…' : '↻ Refresh'}
@@ -141,9 +158,16 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      <AISummary summary={summary} />
+      <AISummary summary={summary} loading={loading} />
       <PromoteCallout ads={ytAds} />
-      <KPIStrip kpis={kpis} />
+
+      {/* KPI grid — 2 per channel, all channels */}
+      {kpis.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-6">
+          {kpis.map((kpi, i) => <KPICard key={i} {...kpi} />)}
+        </div>
+      )}
+
       <CrossPlatformTable rows={platformRows} />
     </div>
   );
