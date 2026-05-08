@@ -33,43 +33,46 @@ export default function BenchmarksPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-xl font-bold">Benchmarks</h1>
-          <p className="text-gray-500 text-sm mt-1">Edit thresholds — changes affect all status badges across the dashboard</p>
+          <h1 className="text-2xl font-bold text-w-hi">Benchmarks</h1>
+          <p className="text-w-mid text-sm mt-0.5">Edit thresholds — changes affect all status badges across the dashboard</p>
         </div>
         <button onClick={save}
-          className="px-3 py-1.5 bg-green-700 hover:bg-green-600 text-white text-sm rounded">
+          className={`px-4 py-1.5 text-white text-xs font-medium rounded-full transition-colors ${
+            saved ? 'bg-w-good' : 'bg-w-blue hover:bg-[#1f38c5]'
+          }`}>
           {saved ? '✓ Saved' : 'Save'}
         </button>
       </div>
-      <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-        <table className="w-full text-sm">
+
+      <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+        <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="text-gray-500 text-xs uppercase border-b border-gray-800">
-              <th className="text-left p-3">Metric</th>
-              <th className="p-3">Unit</th>
-              <th className="p-3">Min (Good)</th>
-              <th className="p-3">Max (Strong)</th>
+            <tr className="border-b border-w-border">
+              <th className="text-left py-3 px-5 text-xs font-medium text-w-mid">Metric</th>
+              <th className="py-3 px-5 text-xs font-medium text-w-mid text-center">Unit</th>
+              <th className="py-3 px-5 text-xs font-medium text-w-mid text-center">Min (Good)</th>
+              <th className="py-3 px-5 text-xs font-medium text-w-mid text-center">Max (Strong)</th>
             </tr>
           </thead>
           <tbody>
             {rows.map(row => (
-              <tr key={row.id} className="border-b border-gray-800 last:border-0">
-                <td className="p-3 text-gray-300">{row.label}</td>
-                <td className="p-3 text-gray-500 text-center">{row.unit}</td>
-                <td className="p-3">
+              <tr key={row.id} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
+                <td className="py-3 px-5 text-w-hi">{row.label}</td>
+                <td className="px-5 text-w-mid text-center">{row.unit}</td>
+                <td className="px-5 text-center">
                   <input
                     type="number" step="0.1" value={row.min ?? ''}
                     onChange={e => update(row.id, 'min', e.target.value)}
-                    className="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm text-center"
+                    className="w-20 bg-w-canvas border border-w-border rounded px-2 py-1 text-w-hi text-sm text-center focus:outline-none focus:border-w-blue"
                   />
                 </td>
-                <td className="p-3">
+                <td className="px-5 text-center">
                   <input
                     type="number" step="0.1" value={row.max ?? ''}
                     onChange={e => update(row.id, 'max', e.target.value)}
-                    className="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-sm text-center"
+                    className="w-20 bg-w-canvas border border-w-border rounded px-2 py-1 text-w-hi text-sm text-center focus:outline-none focus:border-w-blue"
                     placeholder="—"
                   />
                 </td>
@@ -78,7 +81,7 @@ export default function BenchmarksPage() {
           </tbody>
         </table>
       </div>
-      <p className="text-gray-600 text-xs mt-3">Changes are saved to localStorage and persist across sessions. To reset, clear your browser data for this site.</p>
+      <p className="text-w-mid text-xs mt-3">Changes are saved to localStorage and persist across sessions. To reset, clear your browser data for this site.</p>
     </div>
   );
 }
