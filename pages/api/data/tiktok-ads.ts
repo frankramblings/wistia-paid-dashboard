@@ -20,19 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const endDate = now.toISOString().slice(0, 10);
 
   const body = {
-    advertiser_id: advertiserId,
     report_type: 'BASIC',
     dimensions: ['campaign_id'],
-    metrics: [
-      'campaign_name',
-      'spend',
-      'impressions',
-      'clicks',
-      'ctr',
-      'cpc',
-      'total_purchase',
-      'video_play_actions',
-    ],
+    metrics: ['campaign_name', 'spend', 'impressions', 'clicks', 'ctr', 'cpc', 'total_purchase', 'video_play_actions'],
     data_level: 'AUCTION_CAMPAIGN',
     start_date: startDate,
     end_date: endDate,
@@ -40,14 +30,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   };
 
   try {
-    const apiRes = await fetch('https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/', {
-      method: 'POST',
-      headers: {
-        'Access-Token': accessToken,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+    const params = new URLSearchParams({
+      advertiser_id: advertiserId,
+      report_type: body.report_type,
+      dimensions: JSON.stringify(body.dimensions),
+      metrics: JSON.stringify(body.metrics),
+      data_level: body.data_level,
+      start_date: body.start_date,
+      end_date: body.end_date,
+      page_size: String(body.page_size),
     });
+
+    const apiRes = await fetch(
+      `https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/?${params}`,
+      { headers: { 'Access-Token': accessToken } }
+    );
 
     const json = await apiRes.json() as Record<string, unknown>;
 
