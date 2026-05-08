@@ -1,5 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
+import ActionableCallout from '@/components/ActionableCallout';
+import { scoreAndColor, calcCPM } from '@/lib/platformBenchmarks';
 import type { TikTokAdCampaign } from '@/lib/types';
 
 const DATE_RANGES = [
@@ -42,10 +44,54 @@ export default function TikTokAdsPage() {
   useEffect(() => { refresh(0); }, []);
 
   const totalSpend       = campaigns.reduce((s, c) => s + c.spend, 0);
-  const totalClicks      = campaigns.reduce((s, c) => s + c.clicks, 0);
   const totalImpressions = campaigns.reduce((s, c) => s + c.impressions, 0);
-  const totalConversions = campaigns.reduce((s, c) => s + c.conversions, 0);
-  const blendedCTR       = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '—';
+  const totalVideoViews  = campaigns.reduce((s, c) => s + c.videoViews, 0);
+  const blendedViewRate  = totalImpressions > 0 ? (totalVideoViews / totalImpressions * 100) : 0;
+  const blendedCPM       = calcCPM(totalSpend, totalImpressions);
+  const blendedCPV       = totalVideoViews > 0 ? totalSpend / totalVideoViews : 0;
+
+  // Insights
+  const lowViewRate    = campaigns.filter(c => c.impressions > 5000 && (c.videoViews / c.impressions * 100) < 15);
+  const bestViewRate   = campaigns.length ? campaigns.slice().sort((a, b) => {
+    const ra = a.impressions > 0 ? a.videoViews / a.impressions : 0;
+    const rb = b.impressions > 0 ? b.videoViews / b.impressions : 0;
+    return rb - ra;
+  })[0] : null;
+  const bestViewRatePct = bestViewRate && bestViewRate.impressions > 0
+    ? (bestViewRate.videoViews / bestViewRate.impressions * 100)
+    : 0;
+  const highSpendLowViews = campaigns.filter(c => {
+    const vr = c.impressions > 0 ? c.videoViews / c.impressions * 100 : 0;
+    return c.spend > totalSpend * 0.2 && vr < 10;
+  });
+
+  const calloutRules = [
+    {
+      condition: highSpendLowViews.length > 0,
+      message: `${highSpendLowViews.map(c => `"${c.name}"`).join(', ')} ${highSpendLowViews.length > 1 ? 'are' : 'is'} taking 20%+ of budget with <10% view rate — strong candidate${highSpendLowViews.length > 1 ? 's' : ''} to pause.`,
+      type: 'warn' as const,
+    },
+    {
+      condition: lowViewRate.length > 0 && highSpendLowViews.length === 0,
+      message: `${lowViewRate.length} campaign${lowViewRate.length > 1 ? 's' : ''} below 15% view rate — hook isn't landing, test new first 3 seconds.`,
+      type: 'warn' as const,
+    },
+    {
+      condition: !!bestViewRate && bestViewRatePct >= 30,
+      message: bestViewRate ? `"${bestViewRate.name}" hits ${bestViewRatePct.toFixed(0)}% view rate — the strongest hook in the account, double down.` : '',
+      type: 'good' as const,
+    },
+    {
+      condition: blendedCPV > 0 && blendedCPV < 0.02,
+      message: `Cost per video view is $${blendedCPV.toFixed(3)} — well below the $0.02 benchmark. Efficient awareness spend.`,
+      type: 'good' as const,
+    },
+    {
+      condition: blendedCPV > 0.06,
+      message: `Cost per video view is $${blendedCPV.toFixed(3)}, above the $0.06 ceiling. Check creative relevance scores.`,
+      type: 'warn' as const,
+    },
+  ];
 
   return (
     <div>
@@ -81,14 +127,17 @@ export default function TikTokAdsPage() {
         </div>
       )}
 
+      <ActionableCallout rules={calloutRules} />
+
       {campaigns.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
           {[
-            { label: 'Total Spend',  value: `$${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
-            { label: 'Impressions',  value: totalImpressions.toLocaleString() },
-            { label: 'Clicks',       value: totalClicks.toLocaleString() },
-            { label: 'Blended CTR',  value: `${blendedCTR}%` },
-            { label: 'Conversions',  value: totalConversions.toLocaleString() },
+            { label: 'Total Spend',    value: `$${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
+            { label: 'Video Views',    value: totalVideoViews.toLocaleString() },
+            { label: 'View Rate',      value: `${blendedViewRate.toFixed(1)}%` },
+            { label: 'Cost / View',    value: blendedCPV > 0 ? `$${blendedCPV.toFixed(3)}` : '—' },
+            { label: 'Blended CPM',    value: `$${blendedCPM.toFixed(2)}` },
+            { label: 'Impressions',    value: totalImpressions.toLocaleString() },
           ].map(({ label, value }) => (
             <div key={label} className="bg-gray-900 rounded p-3 border border-gray-800">
               <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">{label}</div>
@@ -102,31 +151,35 @@ export default function TikTokAdsPage() {
         <table className="w-full text-xs border-collapse">
           <thead>
             <tr className="text-gray-500 uppercase border-b border-gray-800">
-              {['Campaign', 'Status', 'Impressions', 'Clicks', 'CTR', 'Spend', 'CPC', 'Video Views', 'Conversions'].map(h => (
+              {['Campaign', 'Video Views', 'View Rate', 'Cost/View', 'CPM', 'Spend', 'CTR', 'CPC'].map(h => (
                 <th key={h} className="text-left py-2 pr-4 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {campaigns.map(c => (
-              <tr key={c.campaignId} className="border-b border-gray-900 hover:bg-gray-900/50">
-                <td className="py-2 pr-4 text-white">{c.name}</td>
-                <td className="pr-4 whitespace-nowrap">
-                  <span className={`px-1.5 py-0.5 rounded text-xs ${
-                    c.status === 'ENABLE' || c.status === 'ACTIVE'  ? 'bg-green-900/50 text-green-400' :
-                    c.status === 'DISABLE' || c.status === 'PAUSED' ? 'bg-yellow-900/50 text-yellow-400' :
-                    'bg-gray-800 text-gray-400'
-                  }`}>{c.status || '—'}</span>
-                </td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">{c.impressions.toLocaleString()}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">{c.clicks.toLocaleString()}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">{c.ctr.toFixed(2)}%</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">${c.cpc.toFixed(2)}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">{c.videoViews.toLocaleString()}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">{c.conversions.toLocaleString()}</td>
-              </tr>
-            ))}
+            {campaigns.map(c => {
+              const viewRate = c.impressions > 0 ? (c.videoViews / c.impressions * 100) : 0;
+              const cpv      = c.videoViews > 0 ? c.spend / c.videoViews : 0;
+              const cpm      = calcCPM(c.spend, c.impressions);
+              return (
+                <tr key={c.campaignId} className="border-b border-gray-900 hover:bg-gray-900/50">
+                  <td className="py-2 pr-4 text-white">{c.name}</td>
+                  <td className="pr-4 text-gray-300 whitespace-nowrap">{c.videoViews.toLocaleString()}</td>
+                  <td className={`pr-4 whitespace-nowrap ${scoreAndColor('tiktok', 'viewRate', viewRate)}`}>
+                    {viewRate.toFixed(1)}%
+                  </td>
+                  <td className={`pr-4 whitespace-nowrap ${cpv > 0 ? scoreAndColor('tiktok', 'cpv', cpv) : 'text-gray-500'}`}>
+                    {cpv > 0 ? `$${cpv.toFixed(3)}` : '—'}
+                  </td>
+                  <td className={`pr-4 whitespace-nowrap ${scoreAndColor('tiktok', 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
+                  <td className="pr-4 text-gray-300 whitespace-nowrap">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                  <td className={`pr-4 whitespace-nowrap ${scoreAndColor('tiktok', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
+                  <td className={`pr-4 whitespace-nowrap ${c.cpc > 0 ? scoreAndColor('tiktok', 'cpc', c.cpc) : 'text-gray-500'}`}>
+                    {c.cpc > 0 ? `$${c.cpc.toFixed(2)}` : '—'}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {campaigns.length === 0 && !loading && !notConfigured && (

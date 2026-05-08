@@ -1,5 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
+import ActionableCallout from '@/components/ActionableCallout';
+import { scoreAndColor, calcCPM } from '@/lib/platformBenchmarks';
 import type { LinkedInCampaign } from '@/lib/types';
 
 const DATE_RANGES = [
@@ -39,6 +41,35 @@ export default function LinkedInAdsPage() {
   const totalImpressions = campaigns.reduce((s, c) => s + c.impressions, 0);
   const totalConversions = campaigns.reduce((s, c) => s + c.conversions, 0);
   const blendedCTR       = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '—';
+  const blendedCPM       = calcCPM(totalSpend, totalImpressions);
+
+  const activeCampaigns  = campaigns.filter(c => c.status === 'ACTIVE');
+  const lowCTR           = activeCampaigns.filter(c => c.impressions > 5000 && c.ctr < 0.3);
+  const bestCTR          = campaigns.length ? campaigns.slice().sort((a, b) => b.ctr - a.ctr)[0] : null;
+  const highCPC          = activeCampaigns.filter(c => c.cpc > 15 && c.clicks > 10);
+
+  const calloutRules = [
+    {
+      condition: lowCTR.length > 0,
+      message: `${lowCTR.length} active campaign${lowCTR.length > 1 ? 's' : ''} have CTR below 0.3% — test new creative or narrow the audience.`,
+      type: 'warn' as const,
+    },
+    {
+      condition: highCPC.length > 0,
+      message: `${highCPC.length} campaign${highCPC.length > 1 ? 's' : ''} exceeding $15 CPC — consider switching to CPM bidding.`,
+      type: 'warn' as const,
+    },
+    {
+      condition: !!bestCTR && bestCTR.ctr >= 0.6,
+      message: bestCTR ? `"${bestCTR.name}" leads at ${bestCTR.ctr.toFixed(2)}% CTR — replicate its audience and format.` : '',
+      type: 'good' as const,
+    },
+    {
+      condition: blendedCPM > 0,
+      message: `Blended CPM is $${blendedCPM.toFixed(2)}${blendedCPM > 90 ? ' — above LinkedIn norm, review audience size' : blendedCPM < 50 ? ' — efficient for LinkedIn' : ''}.`,
+      type: blendedCPM > 90 ? 'warn' as const : 'info' as const,
+    },
+  ];
 
   return (
     <div>
@@ -70,6 +101,8 @@ export default function LinkedInAdsPage() {
       </div>
 
       {/* Summary strip */}
+      <ActionableCallout rules={calloutRules} />
+
       {campaigns.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
@@ -109,9 +142,9 @@ export default function LinkedInAdsPage() {
                 </td>
                 <td className="pr-4 text-gray-300 whitespace-nowrap">{c.impressions.toLocaleString()}</td>
                 <td className="pr-4 text-gray-300 whitespace-nowrap">{c.clicks.toLocaleString()}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">{c.ctr.toFixed(2)}%</td>
+                <td className={`pr-4 whitespace-nowrap ${scoreAndColor('linkedin', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
                 <td className="pr-4 text-gray-300 whitespace-nowrap">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                <td className="pr-4 text-gray-300 whitespace-nowrap">${c.cpc.toFixed(2)}</td>
+                <td className={`pr-4 whitespace-nowrap ${scoreAndColor('linkedin', 'cpc', c.cpc)}`}>${c.cpc.toFixed(2)}</td>
                 <td className="pr-4 text-gray-300 whitespace-nowrap">{c.conversions}</td>
               </tr>
             ))}

@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import BenchmarkBadge from '@/components/BenchmarkBadge';
 import PromoteCallout from '@/components/PromoteCallout';
+import ActionableCallout from '@/components/ActionableCallout';
+import { scoreAndColor } from '@/lib/platformBenchmarks';
 import type { YouTubeAdRow } from '@/lib/types';
 
 export default function PaidPage() {
@@ -21,6 +23,34 @@ export default function PaidPage() {
   useEffect(() => { refresh(); }, []);
 
   const creators = Array.from(new Set(ads.map(a => a.creator)));
+  const totalSpendAll = ads.reduce((s, a) => s + a.cost, 0);
+  const poorCPV = ads.filter(a => a.avgCPV > 0.03);
+  const strongCompletion = ads.filter(a => a.played100 >= 40);
+  const bestSub = ads.filter(a => a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
+  const worstCPV = ads.filter(a => a.avgCPV > 0).sort((a, b) => b.avgCPV - a.avgCPV)[0];
+
+  const calloutRules = [
+    {
+      condition: poorCPV.length > 0,
+      message: `${poorCPV.length} ad${poorCPV.length > 1 ? 's' : ''} have CPV above $0.03 benchmark — review targeting or creative.`,
+      type: 'warn' as const,
+    },
+    {
+      condition: strongCompletion.length > 0,
+      message: `${strongCompletion.length} ad${strongCompletion.length > 1 ? 's' : ''} hitting 40%+ completion rate — strong signals for scaling.`,
+      type: 'good' as const,
+    },
+    {
+      condition: !!bestSub,
+      message: bestSub ? `Best cost-per-sub is $${bestSub.costPerConv.toFixed(2)} from "${bestSub.adName}" — prioritise this format.` : '',
+      type: 'good' as const,
+    },
+    {
+      condition: !!worstCPV && worstCPV.avgCPV > 0.05,
+      message: worstCPV ? `"${worstCPV.adName}" has the highest CPV at $${worstCPV.avgCPV.toFixed(3)} — consider pausing.` : '',
+      type: 'warn' as const,
+    },
+  ];
 
   return (
     <div>
@@ -32,6 +62,7 @@ export default function PaidPage() {
         </button>
       </div>
 
+      <ActionableCallout rules={calloutRules} />
       <PromoteCallout ads={ads} />
 
       <div className="overflow-x-auto mb-8">
@@ -51,13 +82,13 @@ export default function PaidPage() {
                   <div className="text-gray-500">{ad.creator}</div>
                 </td>
                 <td className="pr-3 text-gray-400">{ad.format}</td>
-                <td className={`pr-3 ${ad.played100 >= 40 ? 'text-green-400' : 'text-gray-300'}`}>
+                <td className={`pr-3 ${scoreAndColor('youtube', 'played100', ad.played100)}`}>
                   {ad.played100.toFixed(1)}%
                 </td>
-                <td className={`pr-3 ${ad.interactionRate >= 50 ? 'text-green-400' : 'text-gray-300'}`}>
+                <td className={`pr-3 ${scoreAndColor('youtube', 'interactionRate', ad.interactionRate)}`}>
                   {ad.interactionRate.toFixed(1)}%
                 </td>
-                <td className="pr-3 text-gray-300">${ad.avgCPV.toFixed(3)}</td>
+                <td className={`pr-3 ${scoreAndColor('youtube', 'avgCPV', ad.avgCPV)}`}>${ad.avgCPV.toFixed(3)}</td>
                 <td className="pr-3 text-gray-300">{ad.earnedSubs || '—'}</td>
                 <td className="pr-3 text-gray-300">
                   {ad.earnedSubs > 0 ? `$${ad.costPerConv.toFixed(2)}` : '—'}
