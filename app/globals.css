@@ -5,7 +5,7 @@
 @layer base {
   html, body {
     background: #f8f8f9;
-    color: #181d1f;
+    color: #37373c;
   }
   input, select, textarea, button {
     font-family: inherit;

@@ -12,7 +12,7 @@ module.exports = {
           canvas:      '#f8f8f9',
           surface:     '#ffffff',
           border:      '#e3e4e5',
-          hi:          '#181d1f',
+          hi:          '#37373c',
           mid:         '#6b7280',
           blue:        '#2949E5',
           'blue-bg':   'rgba(41,73,229,0.08)',
@@ -26,9 +26,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        plex:  ['var(--font-plex)', 'IBM Plex Sans', '-apple-system', 'sans-serif'],
-        bebas: ['var(--font-bebas)', 'cursive'],
-        sans:  ['var(--font-plex)', 'IBM Plex Sans', '-apple-system', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 4px 1px rgba(0,0,0,0.07)',
