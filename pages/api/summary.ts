@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import type { YouTubeAdRow, YouTubeOrganicVideo, TikTokVideo, DashboardSummary } from '@/lib/types';
+import type { YouTubeAdRow, LinkedInCampaign, MetaCampaign, TikTokAdCampaign, DashboardSummary } from '@/lib/types';
 
 interface SummaryRequest {
   youtubeAds: YouTubeAdRow[];
-  youtubeOrganic: YouTubeOrganicVideo[];
-  tiktok: TikTokVideo[];
+  linkedinAds: LinkedInCampaign[];
+  metaAds: MetaCampaign[];
+  tiktokAds: TikTokAdCampaign[];
   dateRange: string;
 }
 
@@ -14,13 +15,22 @@ function buildPrompt(data: SummaryRequest): string {
     .filter(a => a.format === 'Long-form' && a.earnedSubs > 0)
     .sort((a, b) => a.costPerConv - b.costPerConv)[0];
 
-  const avgCTR = data.youtubeOrganic.length
-    ? (data.youtubeOrganic.reduce((s, v) => s + v.ctr, 0) / data.youtubeOrganic.length).toFixed(1)
+  const liTotalSpend = data.linkedinAds.reduce((s, c) => s + c.spend, 0);
+  const liTopCTR = data.linkedinAds.length
+    ? Math.max(...data.linkedinAds.map(c => c.ctr)).toFixed(2)
     : 'N/A';
 
-  const avgTTEngagement = data.tiktok.length
-    ? (data.tiktok.reduce((s, v) => s + v.engagementRate, 0) / data.tiktok.length).toFixed(1)
-    : 'N/A';
+  const metaTotalSpend = data.metaAds.reduce((s, c) => s + c.spend, 0);
+  const metaBlendedCTR = (() => {
+    const imp = data.metaAds.reduce((s, c) => s + c.impressions, 0);
+    const clk = data.metaAds.reduce((s, c) => s + c.clicks, 0);
+    return imp > 0 ? (clk / imp * 100).toFixed(2) : 'N/A';
+  })();
+
+  const ttTotalSpend = data.tiktokAds.reduce((s, c) => s + c.spend, 0);
+  const ttTotalViews = data.tiktokAds.reduce((s, c) => s + c.videoViews, 0);
+  const ttTotalImp   = data.tiktokAds.reduce((s, c) => s + c.impressions, 0);
+  const ttViewRate   = ttTotalImp > 0 ? (ttTotalViews / ttTotalImp * 100).toFixed(1) : 'N/A';
 
   return `You are a content performance analyst. Summarize this dashboard data in 2–3 sentences, then give ONE specific action item.
 
@@ -30,13 +40,17 @@ YouTube Ads (paid):
 - ${toPromote.length} short(s) ready to promote to Demand Gen: ${toPromote.map(a => a.adName).join(', ') || 'none'}
 - Best long-form cost/sub: ${bestCostSub ? `$${bestCostSub.costPerConv.toFixed(2)} (${bestCostSub.creator})` : 'N/A'}
 
-YouTube Organic:
-- Average CTR: ${avgCTR}% (benchmark 3–5%)
-- Videos tracked: ${data.youtubeOrganic.length}
+LinkedIn Ads:
+- Total spend: $${liTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+- Top campaign CTR: ${liTopCTR}% (benchmark 0.6%)
 
-TikTok:
-- Average engagement rate: ${avgTTEngagement}% (benchmark 4–8%)
-- Videos tracked: ${data.tiktok.length}
+Meta Ads (FB + IG):
+- Total spend: $${metaTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+- Blended CTR: ${metaBlendedCTR}% (benchmark 1%)
+
+TikTok Ads:
+- Total spend: $${ttTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+- Blended video view rate: ${ttViewRate}% (benchmark 30%)
 
 Return JSON: { "narrative": "...", "actionItem": "..." }`;
 }

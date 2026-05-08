@@ -45,7 +45,13 @@ export default function OverviewPage() {
       const summaryRes = await fetch('/api/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ youtubeAds: ads, dateRange: DATE_RANGES.find(r => r.days === days)?.label ?? 'Custom' }),
+        body: JSON.stringify({
+          youtubeAds: ads,
+          linkedinAds: li,
+          metaAds: meta,
+          tiktokAds: tt,
+          dateRange: DATE_RANGES.find(r => r.days === days)?.label ?? 'Custom',
+        }),
       });
       setSummary(await summaryRes.json());
       setLastRefresh(new Date().toLocaleString());
