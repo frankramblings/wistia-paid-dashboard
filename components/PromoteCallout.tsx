@@ -4,16 +4,18 @@ export default function PromoteCallout({ ads }: { ads: YouTubeAdRow[] }) {
   const toPromote = ads.filter(a => a.evaluation?.status === 'promote');
   if (toPromote.length === 0) return null;
   return (
-    <div className="mb-6 p-4 bg-bone-warn-bg border border-bone-warn/50">
-      <div className="text-bone-warn font-bold mb-2 text-sm">
-        {toPromote.length} short{toPromote.length > 1 ? 's' : ''} ready to promote → Demand Gen
+    <div className="mb-6 bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+      <div className="px-5 py-4 border-b border-w-border">
+        <div className="text-sm font-semibold text-w-hi">Creative opportunities</div>
+        <div className="text-xs text-w-mid mt-0.5">
+          These Shorts are ready to test in demand gen based on completion and interaction rates.
+        </div>
       </div>
-      <ul className="space-y-1">
+      <ul className="divide-y divide-w-border">
         {toPromote.map(ad => (
-          <li key={ad.adName} className="text-sm text-bone-mid">
-            <span className="text-bone-hi font-medium">{ad.adName}</span>
-            {' — '}
-            {ad.evaluation?.signals.join(', ')}
+          <li key={ad.adName} className="px-5 py-3 flex items-center justify-between gap-4">
+            <span className="text-sm font-medium text-w-hi">{ad.adName}</span>
+            <span className="text-xs text-w-mid shrink-0">{ad.evaluation?.signals.join(' · ')}</span>
           </li>
         ))}
       </ul>
