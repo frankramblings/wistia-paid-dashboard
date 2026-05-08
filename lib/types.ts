@@ -99,6 +99,33 @@ export interface LinkedInCampaign {
   cpc: number;
 }
 
+export interface MetaCampaign {
+  campaignId: string;
+  name: string;
+  status: string;
+  objective: string;
+  impressions: number;
+  clicks: number;
+  spend: number;
+  reach: number;
+  ctr: number;
+  cpc: number;
+  conversions: number;
+}
+
+export interface TikTokAdCampaign {
+  campaignId: string;
+  name: string;
+  status: string;
+  impressions: number;
+  clicks: number;
+  spend: number;
+  ctr: number;
+  cpc: number;
+  conversions: number;
+  videoViews: number;
+}
+
 export interface DashboardSummary {
   narrative: string;
   actionItem: string;
