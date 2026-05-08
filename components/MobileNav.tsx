@@ -29,12 +29,12 @@ const TABS = [
 export default function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-bone-alt border-t border-bone-border flex">
+    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-w-border flex">
       {TABS.map(({ label, href, Icon }) => {
         const active = pathname === href;
         return (
           <Link key={href} href={href}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors ${active ? 'text-bone-hi' : 'text-bone-mid'}`}>
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors ${active ? 'text-w-blue' : 'text-w-mid'}`}>
             <Icon />
             <span className="text-[8px] font-semibold tracking-[.08em] uppercase">{label}</span>
           </Link>

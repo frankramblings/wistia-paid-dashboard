@@ -60,52 +60,52 @@ function OverviewIcon() {
 }
 
 const NAV = [
-  { section: null,           label: 'Overview',        href: '/',               Icon: OverviewIcon },
-  { section: 'Paid',         label: 'YouTube',          href: '/paid',           Icon: YouTubeIcon },
-  { section: null,           label: 'LinkedIn',         href: '/paid/linkedin',  Icon: LinkedInIcon },
-  { section: null,           label: 'Meta (FB+IG)',     href: '/paid/meta',      Icon: MetaIcon },
-  { section: null,           label: 'TikTok',           href: '/paid/tiktok',    Icon: TikTokIcon },
-  { section: 'Intelligence', label: 'Benchmarks',       href: '/benchmarks',     Icon: BenchmarksIcon },
-  { section: null,           label: 'Learning Loops',   href: '/learning-loops', Icon: LoopsIcon },
+  { section: null,           label: 'Overview',      href: '/',               Icon: OverviewIcon },
+  { section: 'Paid',         label: 'YouTube',        href: '/paid',           Icon: YouTubeIcon },
+  { section: null,           label: 'LinkedIn',       href: '/paid/linkedin',  Icon: LinkedInIcon },
+  { section: null,           label: 'Meta (FB+IG)',   href: '/paid/meta',      Icon: MetaIcon },
+  { section: null,           label: 'TikTok',         href: '/paid/tiktok',    Icon: TikTokIcon },
+  { section: 'Intelligence', label: 'Benchmarks',     href: '/benchmarks',     Icon: BenchmarksIcon },
+  { section: null,           label: 'Learning Loops', href: '/learning-loops', Icon: LoopsIcon },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="w-[172px] shrink-0 bg-bone-alt border-r border-bone-border h-screen sticky top-0 flex flex-col overflow-y-auto">
-      <div className="px-5 py-4 border-b border-bone-border shrink-0">
+    <aside className="w-[200px] shrink-0 h-screen sticky top-0 flex flex-col overflow-y-auto bg-w-blue">
+      <div className="px-5 py-5 shrink-0">
         <Image
           src="/wistia-logo.png"
           alt="Wistia"
           width={90}
           height={24}
-          className="object-contain object-left"
+          className="object-contain object-left brightness-0 invert"
           priority
         />
       </div>
 
-      <nav className="flex-1 py-2">
+      <nav className="flex-1 px-3 pb-4">
         {NAV.map(({ section, label, href, Icon }) => {
           const active = pathname === href;
           return (
             <div key={href}>
               {section && (
-                <div className="px-5 pt-4 pb-1.5 text-bone-mid text-[8px] font-bold tracking-[.22em] uppercase">
+                <div className="px-3 pt-5 pb-1.5 text-[10px] font-semibold tracking-widest uppercase text-white/50">
                   {section}
                 </div>
               )}
               <Link
                 href={href}
-                className={`flex items-center gap-2.5 px-4 py-2 border-l-2 transition-colors ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-full transition-colors ${
                   active
-                    ? 'border-bone-hi bg-bone-info-bg text-bone-hi'
-                    : 'border-transparent text-bone-mid hover:text-bone-hi hover:bg-bone-border/40'
+                    ? 'bg-white text-w-blue font-semibold'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <span className="shrink-0 flex items-center justify-center w-[18px]">
                   <Icon />
                 </span>
-                <span className="text-[10px] font-semibold tracking-[.1em] uppercase leading-tight">{label}</span>
+                <span className="text-[11px] font-medium leading-tight">{label}</span>
               </Link>
             </div>
           );
