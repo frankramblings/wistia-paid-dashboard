@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import AISummary from '@/components/AISummary';
-import PromoteCallout from '@/components/PromoteCallout';
+
 import CrossPlatformTable from '@/components/CrossPlatformTable';
 import { calcCPM } from '@/lib/platformBenchmarks';
 import type { YouTubeAdRow, LinkedInCampaign, MetaCampaign, TikTokAdCampaign, DashboardSummary } from '@/lib/types';
@@ -159,7 +159,6 @@ export default function OverviewPage() {
       </div>
 
       <AISummary summary={summary} loading={loading} />
-      <PromoteCallout ads={ytAds} />
 
       {/* KPI grid — 2 per channel, all channels */}
       {kpis.length > 0 && (
