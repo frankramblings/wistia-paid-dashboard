@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import AISummary from '@/components/AISummary';
 import PromoteCallout from '@/components/PromoteCallout';
 import KPIStrip from '@/components/KPIStrip';
-import type { YouTubeAdRow, YouTubeOrganicVideo, TikTokVideo, LinkedInCampaign, DashboardSummary } from '@/lib/types';
+import type { YouTubeAdRow, LinkedInCampaign, DashboardSummary } from '@/lib/types';
 
 const DATE_RANGES = [
   { label: 'YTD',      days: 0 },
@@ -14,8 +14,6 @@ const DATE_RANGES = [
 
 export default function OverviewPage() {
   const [ytAds, setYtAds] = useState<YouTubeAdRow[]>([]);
-  const [ytOrganic, setYtOrganic] = useState<YouTubeOrganicVideo[]>([]);
-  const [tiktok, setTiktok] = useState<TikTokVideo[]>([]);
   const [liAds, setLiAds] = useState<LinkedInCampaign[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,25 +24,19 @@ export default function OverviewPage() {
     setLoading(true);
     try {
       const liUrl = days > 0 ? `/api/data/linkedin-ads?days=${days}` : '/api/data/linkedin-ads';
-      const [adsRes, organicRes, ttRes, liRes] = await Promise.all([
+      const [adsRes, liRes] = await Promise.all([
         fetch('/api/data/youtube-ads').then(r => r.json()),
-        fetch('/api/data/youtube-organic').then(r => r.json()),
-        fetch('/api/data/tiktok').then(r => r.json()),
         fetch(liUrl).then(r => r.json()),
       ]);
       const ads: YouTubeAdRow[] = adsRes.ads ?? [];
-      const organic: YouTubeOrganicVideo[] = organicRes.videos ?? [];
-      const tt: TikTokVideo[] = ttRes.videos ?? [];
       const li: LinkedInCampaign[] = liRes.campaigns ?? [];
       setYtAds(ads);
-      setYtOrganic(organic);
-      setTiktok(tt);
       setLiAds(li);
 
       const summaryRes = await fetch('/api/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ youtubeAds: ads, youtubeOrganic: organic, tiktok: tt, dateRange: DATE_RANGES.find(r => r.days === days)?.label ?? 'Custom' }),
+        body: JSON.stringify({ youtubeAds: ads, dateRange: DATE_RANGES.find(r => r.days === days)?.label ?? 'Custom' }),
       });
       setSummary(await summaryRes.json());
       setLastRefresh(new Date().toLocaleString());
@@ -66,9 +58,6 @@ export default function OverviewPage() {
     .filter(a => a.format === 'Long-form' && a.earnedSubs > 0)
     .sort((a, b) => a.costPerConv - b.costPerConv)[0];
   const totalEarnedSubs = ytAds.reduce((s, a) => s + a.earnedSubs, 0);
-  const avgCTR = ytOrganic.length
-    ? (ytOrganic.reduce((s, v) => s + v.ctr, 0) / ytOrganic.length).toFixed(1)
-    : '—';
   const liTotalSpend = liAds.reduce((s, c) => s + c.spend, 0);
   const liTopCTR = liAds.length
     ? Math.max(...liAds.map(c => c.ctr)).toFixed(2)
@@ -78,7 +67,6 @@ export default function OverviewPage() {
     { label: 'YT Shorts to Promote', value: String(toPromote.length),   status: toPromote.length > 0 ? 'good' as const : 'neutral' as const },
     { label: 'Best Cost/Sub (YT)',    value: bestCostSub ? `$${bestCostSub.costPerConv.toFixed(2)}` : '—', status: 'good' as const },
     { label: 'YT Earned Subs',        value: String(totalEarnedSubs),    status: 'good' as const },
-    { label: 'YT Organic CTR',        value: `${avgCTR}%`,              status: parseFloat(avgCTR) >= 3 ? 'good' as const : 'warning' as const },
     { label: 'LI Spend',              value: `$${liTotalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, status: 'neutral' as const },
     { label: 'LI Top Campaign CTR',   value: `${liTopCTR}%`,            status: parseFloat(liTopCTR) >= 1 ? 'good' as const : 'warning' as const },
   ];

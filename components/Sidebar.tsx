@@ -3,17 +3,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const NAV = [
-  { section: null,          label: 'Overview',         href: '/' },
-  { section: 'CONTENT',    label: 'TTL (w/ Guest)',    href: '/content/ttl' },
-  { section: null,          label: 'POV (Savage-Only)', href: '/content/pov' },
-  { section: 'PAID',        label: 'YT Ads',            href: '/paid' },
-  { section: null,          label: 'LinkedIn Ads',      href: '/paid/linkedin' },
-  { section: null,          label: 'Meta Ads',           href: '/paid/meta' },
-  { section: null,          label: 'TikTok Ads',         href: '/paid/tiktok' },
-  { section: 'BY PLATFORM', label: 'YouTube',           href: '/platform/youtube' },
-  { section: null,          label: 'LinkedIn',          href: '/platform/linkedin' },
-  { section: 'INTELLIGENCE',label: 'Benchmarks',        href: '/benchmarks' },
-  { section: null,          label: 'Learning Loops',    href: '/learning-loops' },
+  { section: null,           label: 'Overview',      href: '/' },
+  { section: 'PAID',         label: 'YT Ads',        href: '/paid' },
+  { section: null,           label: 'LinkedIn Ads',  href: '/paid/linkedin' },
+  { section: null,           label: 'Meta Ads',      href: '/paid/meta' },
+  { section: null,           label: 'TikTok Ads',    href: '/paid/tiktok' },
+  { section: 'INTELLIGENCE', label: 'Benchmarks',    href: '/benchmarks' },
+  { section: null,           label: 'Learning Loops', href: '/learning-loops' },
 ];
 
 export default function Sidebar() {
