@@ -25,21 +25,15 @@ export default function MetaAdsPage() {
       const res = await fetch(url);
       const data = await res.json();
       if (data.status === 'not_configured') {
-        setNotConfigured(true);
-        setCampaigns([]);
+        setNotConfigured(true); setCampaigns([]);
       } else {
-        setNotConfigured(false);
-        setCampaigns(data.campaigns ?? []);
+        setNotConfigured(false); setCampaigns(data.campaigns ?? []);
       }
       setLastRefresh(new Date().toLocaleString());
     } finally { setLoading(false); }
   };
 
-  const handleRangeChange = (days: number) => {
-    setSelectedDays(days);
-    refresh(days);
-  };
-
+  const handleRangeChange = (days: number) => { setSelectedDays(days); refresh(days); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { refresh(0); }, []);
 
@@ -64,63 +58,38 @@ export default function MetaAdsPage() {
   })();
 
   const calloutRules = [
-    {
-      condition: lowCTR.length > 0,
-      message: `${lowCTR.length} active campaign${lowCTR.length > 1 ? 's' : ''} below 0.5% CTR — refresh creative or tighten audience.`,
-      type: 'warn' as const,
-    },
-    {
-      condition: !!engVsTraffic,
-      message: engVsTraffic ? `Engagement campaigns are ${engVsTraffic.ratio}× cheaper per impression than traffic campaigns — consider reallocating budget.` : '',
-      type: 'info' as const,
-    },
-    {
-      condition: !!bestCTR && bestCTR.ctr >= 1.0,
-      message: bestCTR ? `"${bestCTR.name}" leads at ${bestCTR.ctr.toFixed(2)}% CTR — strong signal to scale.` : '',
-      type: 'good' as const,
-    },
-    {
-      condition: blendedCPM > 0 && blendedCPM < 8,
-      message: `Blended CPM of $${blendedCPM.toFixed(2)} is below the $8 Meta benchmark — efficient reach.`,
-      type: 'good' as const,
-    },
-    {
-      condition: blendedCPM > 20,
-      message: `Blended CPM of $${blendedCPM.toFixed(2)} is above $20 — consider broader audiences or different placements.`,
-      type: 'warn' as const,
-    },
+    { condition: lowCTR.length > 0, message: `${lowCTR.length} active campaign${lowCTR.length > 1 ? 's' : ''} below 0.5% CTR — refresh creative or tighten audience.`, type: 'warn' as const },
+    { condition: !!engVsTraffic, message: engVsTraffic ? `Engagement campaigns are ${engVsTraffic.ratio}× cheaper per impression than traffic campaigns — consider reallocating budget.` : '', type: 'info' as const },
+    { condition: !!bestCTR && bestCTR.ctr >= 1.0, message: bestCTR ? `"${bestCTR.name}" leads at ${bestCTR.ctr.toFixed(2)}% CTR — strong signal to scale.` : '', type: 'good' as const },
+    { condition: blendedCPM > 0 && blendedCPM < 8, message: `Blended CPM of $${blendedCPM.toFixed(2)} is below the $8 Meta benchmark — efficient reach.`, type: 'good' as const },
+    { condition: blendedCPM > 20, message: `Blended CPM of $${blendedCPM.toFixed(2)} is above $20 — consider broader audiences or different placements.`, type: 'warn' as const },
   ];
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">Meta Ads (FB + IG)</h1>
-        <div className="flex items-center gap-2">
-          <div className="flex bg-bone-alt border border-bone-border rounded overflow-hidden text-xs">
+      <div className="flex items-center justify-between mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-w-hi">Meta Ads (FB + IG)</h1>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex gap-1">
             {DATE_RANGES.map(({ label, days }) => (
-              <button
-                key={label}
-                onClick={() => handleRangeChange(days)}
-                className={`px-3 py-1.5 transition-colors ${
-                  selectedDays === days
-                    ? 'bg-bone-hi text-bone-bg'
-                    : 'text-bone-mid hover:text-bone-hi hover:bg-bone-border/40'
-                }`}
-              >
+              <button key={label} onClick={() => handleRangeChange(days)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  selectedDays === days ? 'bg-w-blue text-white' : 'bg-w-surface border border-w-border text-w-mid hover:text-w-hi'
+                }`}>
                 {label}
               </button>
             ))}
           </div>
-          {lastRefresh && <span className="text-bone-mid text-xs hidden sm:block">Refreshed {lastRefresh}</span>}
+          {lastRefresh && <span className="text-w-mid text-xs hidden sm:block">{lastRefresh}</span>}
           <button onClick={() => refresh()} disabled={loading}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm rounded">
+            className="px-4 py-1.5 bg-w-blue hover:bg-[#1f38c5] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
             {loading ? 'Loading…' : '↻'}
           </button>
         </div>
       </div>
 
       {notConfigured && (
-        <div className="mb-6 px-4 py-3 bg-bone-warn-bg border border-bone-warn/50 text-bone-warn text-sm">
+        <div className="mb-6 px-4 py-3 rounded-lg bg-w-blue-bg border border-w-blue/30 text-w-blue text-sm">
           Meta Ads not configured. Add META_ACCESS_TOKEN and META_AD_ACCOUNT_ID to environment variables.
         </div>
       )}
@@ -137,54 +106,54 @@ export default function MetaAdsPage() {
             { label: 'Blended CTR',  value: `${blendedCTR.toFixed(2)}%` },
             { label: 'Conversions',  value: totalConversions.toLocaleString() },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-bone-alt rounded p-3 border border-bone-border">
-              <div className="text-bone-mid text-[10px] uppercase tracking-wide mb-1">{label}</div>
-              <div className="text-bone-hi font-bebas text-3xl leading-none">{value}</div>
+            <div key={label} className="bg-w-surface rounded-lg p-4 border border-w-border shadow-card">
+              <div className="text-w-mid text-xs font-medium mb-2">{label}</div>
+              <div className="text-w-hi font-bebas text-3xl leading-none">{value}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-          <thead>
-            <tr className="text-bone-mid uppercase border-b border-bone-border">
-              {['Campaign', 'Status', 'Objective', 'Impressions', 'CPM', 'Clicks', 'CTR', 'Spend', 'CPC', 'Conversions'].map(h => (
-                <th key={h} className="text-left py-2 pr-4 whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {campaigns.map(c => {
-              const cpm = calcCPM(c.spend, c.impressions);
-              return (
-                <tr key={c.campaignId} className="border-b border-bone-border hover:bg-bone-alt">
-                  <td className="py-2 pr-4 text-bone-hi">{c.name}</td>
-                  <td className="pr-4 whitespace-nowrap">
-                    <span className={`px-1.5 py-0.5 text-xs font-medium ${
-                      c.status === 'ACTIVE'  ? 'bg-bone-good-bg text-bone-good' :
-                      c.status === 'PAUSED'  ? 'bg-bone-warn-bg text-bone-warn' :
-                      'bg-bone-info-bg text-bone-mid'
-                    }`}>{c.status}</span>
-                  </td>
-                  <td className="pr-4 text-bone-mid whitespace-nowrap text-xs">{c.objective?.replace('OUTCOME_', '')}</td>
-                  <td className="pr-4 text-bone-mid whitespace-nowrap">{c.impressions.toLocaleString()}</td>
-                  <td className={`pr-4 whitespace-nowrap ${scoreAndColor('meta', 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
-                  <td className="pr-4 text-bone-mid whitespace-nowrap">{c.clicks.toLocaleString()}</td>
-                  <td className={`pr-4 whitespace-nowrap ${scoreAndColor('meta', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
-                  <td className="pr-4 text-bone-mid whitespace-nowrap">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                  <td className={`pr-4 whitespace-nowrap ${c.cpc > 0 ? scoreAndColor('meta', 'cpc', c.cpc) : 'text-bone-mid'}`}>
-                    {c.cpc > 0 ? `$${c.cpc.toFixed(2)}` : '—'}
-                  </td>
-                  <td className="pr-4 text-bone-mid whitespace-nowrap">{c.conversions > 0 ? c.conversions.toLocaleString() : '—'}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {campaigns.length === 0 && !loading && !notConfigured && (
-          <p className="text-bone-mid text-sm py-8 text-center">No data — click ↻</p>
-        )}
+      <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-w-border">
+                {['Campaign', 'Status', 'Objective', 'Impressions', 'CPM', 'Clicks', 'CTR', 'Spend', 'CPC', 'Conversions'].map(h => (
+                  <th key={h} className="text-left py-3 px-5 text-xs font-medium text-w-mid whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {campaigns.map(c => {
+                const cpm = calcCPM(c.spend, c.impressions);
+                return (
+                  <tr key={c.campaignId} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
+                    <td className="py-3 px-5 text-w-hi">{c.name}</td>
+                    <td className="px-5 whitespace-nowrap">
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                        c.status === 'ACTIVE' ? 'bg-w-good-bg text-w-good' :
+                        c.status === 'PAUSED' ? 'bg-w-warn-bg text-w-warn' :
+                        'bg-w-border text-w-mid'
+                      }`}>{c.status}</span>
+                    </td>
+                    <td className="px-5 text-w-mid whitespace-nowrap">{c.objective?.replace('OUTCOME_', '')}</td>
+                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">{c.impressions.toLocaleString()}</td>
+                    <td className={`px-5 whitespace-nowrap tabular-nums ${scoreAndColor('meta', 'cpm', cpm)}`}>${cpm.toFixed(2)}</td>
+                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">{c.clicks.toLocaleString()}</td>
+                    <td className={`px-5 whitespace-nowrap tabular-nums ${scoreAndColor('meta', 'ctr', c.ctr)}`}>{c.ctr.toFixed(2)}%</td>
+                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">${c.spend.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    <td className={`px-5 whitespace-nowrap tabular-nums ${c.cpc > 0 ? scoreAndColor('meta', 'cpc', c.cpc) : 'text-w-mid'}`}>{c.cpc > 0 ? `$${c.cpc.toFixed(2)}` : '—'}</td>
+                    <td className="px-5 text-w-mid whitespace-nowrap tabular-nums">{c.conversions > 0 ? c.conversions.toLocaleString() : '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {campaigns.length === 0 && !loading && !notConfigured && (
+            <p className="text-w-mid text-sm py-8 text-center">No data — click ↻</p>
+          )}
+        </div>
       </div>
     </div>
   );
