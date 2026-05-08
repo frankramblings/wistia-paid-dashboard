@@ -4,14 +4,14 @@ export default function KPIStrip({ kpis }: { kpis: KPI[] }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
       {kpis.map(k => (
-        <div key={k.label} className="bg-bone-alt rounded p-3 border border-bone-border">
+        <div key={k.label} className="bg-w-surface rounded-lg p-4 border border-w-border shadow-card">
+          <div className="text-w-mid text-xs font-medium mb-2">{k.label}</div>
           <div className={`font-bebas text-3xl leading-none ${
-            k.status === 'good'    ? 'text-bone-good' :
-            k.status === 'warning' ? 'text-bone-warn' : 'text-bone-hi'
+            k.status === 'good'    ? 'text-w-good' :
+            k.status === 'warning' ? 'text-w-warn' : 'text-w-hi'
           }`}>
             {k.value}
           </div>
-          <div className="text-bone-mid text-[10px] uppercase tracking-wide mt-1 truncate">{k.label}</div>
         </div>
       ))}
     </div>

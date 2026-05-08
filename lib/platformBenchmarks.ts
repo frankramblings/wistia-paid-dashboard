@@ -43,9 +43,9 @@ export function scoreMetric(platform: string, metric: string, value: number): Me
 }
 
 export function metricColor(status: MetricStatus): string {
-  if (status === 'good') return 'text-bone-good';
-  if (status === 'poor') return 'text-bone-poor';
-  return 'text-bone-mid';
+  if (status === 'good') return 'text-w-good';
+  if (status === 'poor') return 'text-w-poor';
+  return 'text-w-mid';
 }
 
 export function scoreAndColor(platform: string, metric: string, value: number): string {
