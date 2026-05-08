@@ -85,68 +85,74 @@ export default function LearningLoopsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-xl font-bold">Learning Loops</h1>
-          <p className="text-gray-500 text-sm mt-1">Tag top assets by hook type and topic, then find patterns</p>
+          <h1 className="text-2xl font-bold text-w-hi">Learning Loops</h1>
+          <p className="text-w-mid text-sm mt-0.5">Tag top assets by hook type and topic, then find patterns</p>
         </div>
         <div className="flex gap-2">
           <button onClick={refresh} disabled={loading}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded">
+            className="px-4 py-1.5 bg-w-surface border border-w-border text-w-mid hover:text-w-hi text-xs font-medium rounded-full transition-colors disabled:opacity-50">
             {loading ? 'Loading…' : '↻ Refresh'}
           </button>
           <button onClick={analyzePatterns} disabled={analyzing || assets.length === 0}
-            className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white text-sm rounded">
+            className="px-4 py-1.5 bg-w-blue hover:bg-[#1f38c5] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
             {analyzing ? 'Analyzing…' : '✦ Find Patterns'}
           </button>
         </div>
       </div>
 
       {pattern && (
-        <div className="mb-6 p-4 bg-gray-900 border-l-4 border-blue-500 rounded-r-lg">
-          <div className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">✦ Pattern Analysis</div>
-          <p className="text-gray-200 text-sm leading-relaxed">{pattern}</p>
+        <div className="mb-6 bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-w-border">
+            <div className="text-xs font-semibold text-w-mid uppercase tracking-wider">✦ Pattern Analysis</div>
+          </div>
+          <div className="mx-5 my-4 px-4 py-3 bg-w-blue-bg rounded-lg border-l-4 border-w-blue">
+            <p className="text-sm text-w-hi leading-relaxed">{pattern}</p>
+          </div>
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-          <thead>
-            <tr className="text-gray-500 uppercase border-b border-gray-800">
-              <th className="text-left py-2 pr-3">Asset</th>
-              <th className="pr-3">Format</th>
-              <th className="pr-3">Primary Metric</th>
-              <th className="pr-3">Hook Type</th>
-              <th>Topic</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assets.map(a => (
-              <tr key={a.videoId} className="border-b border-gray-900 hover:bg-gray-900/50">
-                <td className="py-2 pr-3 text-white max-w-xs truncate">{a.title}</td>
-                <td className="pr-3 text-gray-400 capitalize">{a.format}</td>
-                <td className="pr-3 text-gray-300">{a.primaryMetric.toFixed(1)}% {a.metricLabel}</td>
-                <td className="pr-3">
-                  <select value={a.hook} onChange={e => updateTag(a.videoId, 'hook', e.target.value)}
-                    className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-gray-300 text-xs">
-                    <option value="">— tag</option>
-                    {HOOK_OPTIONS.map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
-                </td>
-                <td>
-                  <select value={a.topic} onChange={e => updateTag(a.videoId, 'topic', e.target.value)}
-                    className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-gray-300 text-xs">
-                    <option value="">— tag</option>
-                    {TOPIC_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </td>
+      <div className="bg-w-surface border border-w-border rounded-lg shadow-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-w-border">
+                <th className="text-left py-3 px-5 text-xs font-medium text-w-mid">Asset</th>
+                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Format</th>
+                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Primary Metric</th>
+                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Hook Type</th>
+                <th className="py-3 px-5 text-xs font-medium text-w-mid text-left whitespace-nowrap">Topic</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {assets.length === 0 && !loading && (
-          <p className="text-gray-600 text-sm py-8 text-center">No data — click Refresh</p>
-        )}
+            </thead>
+            <tbody>
+              {assets.map(a => (
+                <tr key={a.videoId} className="border-b border-w-border last:border-0 hover:bg-w-canvas">
+                  <td className="py-3 px-5 text-w-hi font-medium max-w-xs truncate">{a.title}</td>
+                  <td className="px-5 text-w-mid capitalize whitespace-nowrap">{a.format}</td>
+                  <td className="px-5 text-w-hi whitespace-nowrap tabular-nums">{a.primaryMetric.toFixed(1)}% <span className="text-w-mid">{a.metricLabel}</span></td>
+                  <td className="px-5">
+                    <select value={a.hook} onChange={e => updateTag(a.videoId, 'hook', e.target.value)}
+                      className="bg-w-canvas border border-w-border rounded px-2 py-1 text-w-hi text-xs focus:outline-none focus:border-w-blue">
+                      <option value="">— tag</option>
+                      {HOOK_OPTIONS.map(h => <option key={h} value={h}>{h}</option>)}
+                    </select>
+                  </td>
+                  <td className="px-5">
+                    <select value={a.topic} onChange={e => updateTag(a.videoId, 'topic', e.target.value)}
+                      className="bg-w-canvas border border-w-border rounded px-2 py-1 text-w-hi text-xs focus:outline-none focus:border-w-blue">
+                      <option value="">— tag</option>
+                      {TOPIC_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {assets.length === 0 && !loading && (
+            <p className="text-w-mid text-sm py-8 text-center">No data — click Refresh</p>
+          )}
+        </div>
       </div>
     </div>
   );
