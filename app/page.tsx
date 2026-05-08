@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import AISummary from '@/components/AISummary';
-
 import CrossPlatformTable from '@/components/CrossPlatformTable';
 import { calcCPM } from '@/lib/platformBenchmarks';
 import type { YouTubeAdRow, LinkedInCampaign, MetaCampaign, TikTokAdCampaign, DashboardSummary } from '@/lib/types';
@@ -23,21 +22,20 @@ interface KPI {
 
 function KPICard({ label, value, status, channel, channelColor }: KPI) {
   const valClass = {
-    good:    'text-bone-good',
-    warn:    'text-bone-warn',
-    poor:    'text-bone-poor',
-    neutral: 'text-bone-hi',
+    good:    'text-w-good',
+    warn:    'text-w-warn',
+    poor:    'text-w-poor',
+    neutral: 'text-w-hi',
   }[status];
 
   return (
-    <div className="bg-bone-alt border border-bone-border relative overflow-hidden p-3">
+    <div className="bg-w-surface border border-w-border rounded-lg p-4 shadow-card">
       <div className="flex items-center gap-1.5 mb-2">
-        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: channelColor }} />
-        <span className="text-[8px] font-bold uppercase tracking-[.14em] text-bone-mid">{channel}</span>
+        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: channelColor }} />
+        <span className="text-xs font-medium text-w-mid">{channel}</span>
       </div>
       <div className={`font-bebas text-3xl leading-none ${valClass}`}>{value}</div>
-      <div className="text-bone-mid text-[9px] uppercase tracking-wide mt-1 truncate">{label}</div>
-      <div className="absolute bottom-0 left-0 w-0.5 top-0" style={{ background: channelColor }} />
+      <div className="text-w-mid text-xs mt-1.5 truncate">{label}</div>
     </div>
   );
 }
@@ -86,9 +84,9 @@ export default function OverviewPage() {
   useEffect(() => { refresh(selectedDays); }, []);
 
   // ── YouTube ──────────────────────────────────────────
-  const ytSpend     = ytAds.reduce((s, a) => s + a.cost, 0);
+  const ytSpend      = ytAds.reduce((s, a) => s + a.cost, 0);
   const ytEarnedSubs = ytAds.reduce((s, a) => s + a.earnedSubs, 0);
-  const bestCostSub = ytAds.filter(a => a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
+  const bestCostSub  = ytAds.filter(a => a.earnedSubs > 0).sort((a, b) => a.costPerConv - b.costPerConv)[0];
 
   // ── LinkedIn ─────────────────────────────────────────
   const liSpend = liAds.reduce((s, c) => s + c.spend, 0);
@@ -110,6 +108,8 @@ export default function OverviewPage() {
   const ttViews    = ttAds.reduce((s, c) => s + c.videoViews, 0);
   const ttViewRate = ttImp > 0 ? (ttViews / ttImp * 100) : 0;
   const ttCPV      = ttViews > 0 ? ttSpend / ttViews : 0;
+
+  const totalSpend = ytSpend + liSpend + metaSpend + ttSpend;
 
   const kpis: KPI[] = [
     ...(ytSpend > 0 ? [
@@ -139,20 +139,32 @@ export default function OverviewPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">Overview</h1>
-        <div className="flex items-center gap-2">
-          <div className="flex bg-bone-alt border border-bone-border rounded overflow-hidden text-xs">
+      {/* Page header */}
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-w-hi">Overview</h1>
+          {totalSpend > 0 && (
+            <p className="text-w-mid text-sm mt-0.5">
+              ${totalSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })} total spend
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex gap-1">
             {DATE_RANGES.map(({ label, days }) => (
               <button key={label} onClick={() => handleRangeChange(days)}
-                className={`px-3 py-1.5 transition-colors ${selectedDays === days ? 'bg-bone-hi text-bone-bg' : 'text-bone-mid hover:text-bone-hi hover:bg-bone-border/40'}`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  selectedDays === days
+                    ? 'bg-w-blue text-white'
+                    : 'bg-w-surface border border-w-border text-w-mid hover:text-w-hi'
+                }`}>
                 {label}
               </button>
             ))}
           </div>
-          {lastRefresh && <span className="text-bone-mid text-xs hidden sm:block">Refreshed {lastRefresh}</span>}
+          {lastRefresh && <span className="text-w-mid text-xs hidden sm:block">{lastRefresh}</span>}
           <button onClick={() => refresh()} disabled={loading}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm rounded">
+            className="px-4 py-1.5 bg-w-blue hover:bg-[#1f38c5] disabled:opacity-50 text-white text-xs font-medium rounded-full transition-colors">
             {loading ? 'Refreshing…' : '↻ Refresh'}
           </button>
         </div>
@@ -160,9 +172,8 @@ export default function OverviewPage() {
 
       <AISummary summary={summary} loading={loading} />
 
-      {/* KPI grid — 2 per channel, all channels */}
       {kpis.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
           {kpis.map((kpi, i) => <KPICard key={i} {...kpi} />)}
         </div>
       )}
